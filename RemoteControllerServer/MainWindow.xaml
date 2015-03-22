@@ -1,0 +1,16 @@
+﻿<Window x:Class="RemoteControllerServer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Server Socket" Height="553" Width="366">
+    <Grid Background="#FFD7CBFD">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="207*"/>
+            <ColumnDefinition Width="151*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="Start_Button" Content="Start server" HorizontalAlignment="Left" Margin="60,23,0,0" VerticalAlignment="Top" Width="120" Click="Start_Click" Background="Black" Foreground="White"/>
+        <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,498,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
+        <Button Name="Close_Button" Content="Close connection" HorizontalAlignment="Left" Margin="60,101,0,0" VerticalAlignment="Top" Width="120" Click="Close_Click" Background="Black" Foreground="White"/>
+        <Button Name="StartListen_Button" Content="Start listening" HorizontalAlignment="Left" Margin="60,59,0,0" VerticalAlignment="Top" Width="120" Click="Listen_Click" Background="Black" Foreground="White"/>
+
+    </Grid>
+</Window>
