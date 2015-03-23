@@ -164,7 +164,7 @@ namespace RemoteController
             }
             else
             {
-                MessageBox.Show("Fill al fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Fill all fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
         }
