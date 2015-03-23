@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using Utils.Keyboard;
 
 namespace RemoteController
 {
@@ -27,6 +28,7 @@ namespace RemoteController
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
+        KeyboardListener KListener = new KeyboardListener();
 
         public MainWindow()
         {
@@ -235,6 +237,21 @@ namespace RemoteController
             {
                 listBoxServers.Items.Add(s.name);
             }
+        }
+
+        private void Application_Startup(object sender, RoutedEventArgs e)
+        {
+            KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+        }
+
+        void KListener_KeyDown(object sender, RawKeyEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() => { tbKeyboardCapture.Text += args.Key.ToString(); }));
+        }
+
+        private void Application_Exit(object sender, EventArgs e)
+        {
+            KListener.Dispose();
         }
 
     }
