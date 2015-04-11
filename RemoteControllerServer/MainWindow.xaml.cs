@@ -211,6 +211,14 @@ namespace RemoteControllerServer
                     tbConnectionStatus.Text = "Connection accepted.";
                     tbKeyboardStatus.Text = "Connection Keyboard accepted.";
                 }));
+                handler.BeginReceive(
+                     buffer,        // An array of type Byt for received data 
+                     0,             // The zero-based position in the buffer  
+                     buffer.Length, // The number of bytes to receive 
+                     SocketFlags.None,// Specifies send and receive behaviors 
+                     new AsyncCallback(ReceiveCallback),//An AsyncCallback delegate 
+                     obj            // Specifies infomation for receive operation 
+                     );
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
 
                 listener.BeginAccept(aCallback, listener);
@@ -244,6 +252,7 @@ namespace RemoteControllerServer
                     content += Encoding.Unicode.GetString(buffer, 0,
                         bytesRead);
 
+                    this.Dispatcher.Invoke((Action)(() => { tbConnectionStatus.Text = content; }));
                     Parse_KB_Event(content);
 
                     // If message contains "<Client Quit>", finish receiving
@@ -288,15 +297,18 @@ namespace RemoteControllerServer
 
         private void Parse_KB_Event(string kbEvent)
         {
+            //KeyboardSender.SendKeyPress();
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
-            if (words[0] == "UP")
+            /*if (words[0] == "UP")
             {
                 KeyboardSender.SendKeyUP(words[1]);
             }
             if (words[1] == "DOWN")
             {
                 KeyboardSender.SendKeyDown(words[1]);
-            }
+            }*/
+            KeyboardSender.SendKeyDown(words[1]);
+            KeyboardSender.SendKeyUP(words[1]);
         }
     }
 }

@@ -162,7 +162,7 @@ namespace Utils.KeyboardSender
         };
 
 
-        public static void SendKeyPress(KeyCode keyCode)
+        public static void SendKeyPress()
         {
             INPUT input = new INPUT
             {
@@ -208,6 +208,7 @@ namespace Utils.KeyboardSender
                     ki = new KEYBDINPUT
                     {
                         wVk = mycodes[k],
+                        //wVk = 0x44,
                         wScan = 0,
                         dwFlags = 0,
                         dwExtraInfo = IntPtr.Zero,
@@ -229,6 +230,7 @@ namespace Utils.KeyboardSender
                     ki = new KEYBDINPUT
                     {
                         wVk = mycodes[k],
+                        //wVk = 0x44,
                         wScan = 0,
                         dwFlags = 2,
                         dwExtraInfo = IntPtr.Zero,
