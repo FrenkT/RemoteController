@@ -206,8 +206,10 @@ namespace RemoteControllerServer
                 object[] obj = new object[2];
                 obj[0] = buffer;
                 obj[1] = handler;
-                this.Dispatcher.Invoke((Action)(() => { tbConnectionStatus.Text = "Connection accepted.";
-                                                        tbKeyboardStatus.Text = "Connection Keyboard accepted.";
+                this.Dispatcher.Invoke((Action)(() => { 
+                    
+                    tbConnectionStatus.Text = "Connection accepted.";
+                    tbKeyboardStatus.Text = "Connection Keyboard accepted.";
                 }));
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
 
@@ -215,6 +217,58 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
+        /*
+        public void ReceiveCallback(IAsyncResult ar)
+        {
+            try
+            {
+                // Fetch a user-defined object that contains information 
+                object[] obj = new object[2];
+                obj = (object[])ar.AsyncState;
+
+                // Received byte array 
+                byte[] buffer = (byte[])obj[0];
+
+                // A Socket to handle remote host communication. 
+                handler = (Socket)obj[1];
+
+                // Received message 
+                string content = string.Empty;
+
+
+                // The number of bytes received. 
+                int bytesRead = handler.EndReceive(ar);
+
+                if (bytesRead > 0)
+                {
+                    content += Encoding.Unicode.GetString(buffer, 0,
+                        bytesRead);
+
+                    // If message contains "<Client Quit>", finish receiving
+                    if (content.IndexOf("<Client Quit>") > -1)
+                    {
+                        // Convert byte array to string
+                        string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
+                                            }
+                    else
+                    {
+                        // Continues to asynchronously receive data
+                        byte[] buffernew = new byte[1024];
+                        obj[0] = buffernew;
+                        obj[1] = handler;
+
+                        // Call the BeginReceive() asynchronous function to wait for any socket write activity by the server.
+                        handler.BeginReceive(buffernew, 0, buffernew.Length,
+                            SocketFlags.None,
+                            new AsyncCallback(ReceiveCallback), obj);
+                    }
+                }
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+        }
+
+        */
+
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {

@@ -39,11 +39,11 @@ namespace RemoteController
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
             SocketTCP_Connection();
-            /*
             string theMessageToSend = workingPassword;
             byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
 
             // Sends data to a connected Socket. 
+            /*
             int bytesSend = senderSock.Send(msg);
             int ricevo = ReceiveDataFromServer();
             if (ricevo == 1) {
