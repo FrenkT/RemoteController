@@ -229,5 +229,18 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
+
+        private void Parse_KB_Event(string kbEvent)
+        {
+            string[] words = kbEvent.Split(new char[] { '+' }, 2);
+            if (words[0] == "UP")
+            {
+
+            }
+            if (words[1] == "DOWN")
+            {
+
+            }
+        }
     }
 }

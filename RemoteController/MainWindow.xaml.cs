@@ -399,6 +399,7 @@ namespace RemoteController
         private void Application_Startup(object sender, RoutedEventArgs e)
         {
             KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+            KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
         }
 
         // si scatena quando il client schiaccia un tasta qualsiasi
@@ -438,9 +439,9 @@ namespace RemoteController
 
         private void SendKey(string pressType, System.Windows.Input.Key key)
         {
-            string kbevent = pressType + "+" + key;
-            byte[] msg1 = Encoding.Unicode.GetBytes(kbevent);
-            int bytesSend = senderSock.Send(msg1);
+            string kbEvent = pressType + "+" + key;
+            byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
+            int bytesSend = senderSock.Send(ReadyKbEvent);
         }
 
     }
