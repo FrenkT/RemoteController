@@ -242,17 +242,24 @@ namespace RemoteController
         private void Application_Startup(object sender, RoutedEventArgs e)
         {
             KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+            KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
         }
 
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
-            this.Dispatcher.Invoke((Action)(() => { tbKeyboardCapture.Text += args.Key.ToString(); }));
+            this.Dispatcher.Invoke((Action)(() => { tbKeyboardCapture.Text += "DOWN" + args.Key; }));
+        }
+
+        void KListener_KeyUp(object sender, RawKeyEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() => { tbKeyboardCapture.Text += "UP" + args.Key; }));
         }
 
         private void Application_Exit(object sender, EventArgs e)
         {
             KListener.Dispose();
         }
+
 
     }
 }

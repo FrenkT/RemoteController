@@ -4,6 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Windows.Threading;
+using Utils.KeyboardSender;
+using System.Windows.Input;
 
 namespace RemoteControllerServer
 {
@@ -29,7 +33,8 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            String locIp = "127.0.0.1";
+            //String locIp = "127.0.0.1";
+            String locIp = "169.254.26.84";
             int locPort = 4510;
             try
             {
@@ -128,9 +133,78 @@ namespace RemoteControllerServer
                 obj[0] = buffer;
                 obj[1] = handler;
                 this.Dispatcher.Invoke((Action)(() => { tbConnectionStatus.Text = "Connection accepted."; }));
+                handler.BeginReceive(
+                    buffer,        // An array of type Byt for received data 
+                    0,             // The zero-based position in the buffer  
+                    buffer.Length, // The number of bytes to receive 
+                    SocketFlags.None,// Specifies send and receive behaviors 
+                    new AsyncCallback(ReceiveCallback),//An AsyncCallback delegate 
+                    obj            // Specifies infomation for receive operation 
+                    );
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
 
                 listener.BeginAccept(aCallback, listener);
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+        }
+
+        public void ReceiveCallback(IAsyncResult ar)
+        {
+            try
+            {
+                // Fetch a user-defined object that contains information 
+                object[] obj = new object[2];
+                obj = (object[])ar.AsyncState;
+
+                // Received byte array 
+                byte[] buffer = (byte[])obj[0];
+
+                // A Socket to handle remote host communication. 
+                handler = (Socket)obj[1];
+
+                // Received message 
+                string content = string.Empty;
+
+
+                // The number of bytes received. 
+                int bytesRead = handler.EndReceive(ar);
+
+                KeyboardSender.SendKeyPress(Key.B);
+                this.Dispatcher.Invoke((Action)(() => { tbConnectionStatus.Text = "arriva roba!!!!!"; }));
+
+
+                if (bytesRead > 0)
+                {
+                    content += Encoding.Unicode.GetString(buffer, 0,
+                        bytesRead);
+
+                    // If message contains "<Client Quit>", finish receiving
+                    if (content.IndexOf("<Client Quit>") > -1)
+                    {
+                        // Convert byte array to string
+                        string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
+
+                        //this is used because the UI couldn't be accessed from an external Thread
+                        this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+                        {
+                            //MessageBox.Show("Read " + str.Length * 2 + " bytes from client.\n Data: " + str);
+                            tbAux.Text = "Read " + str.Length * 2 + " bytes from client.\n Data: " + str;
+                        }
+                        );
+                    }
+                    else
+                    {
+                        // Continues to asynchronously receive data
+                        byte[] buffernew = new byte[1024];
+                        obj[0] = buffernew;
+                        obj[1] = handler;
+
+                        // Call the BeginReceive() asynchronous function to wait for any socket write activity by the server.
+                        handler.BeginReceive(buffernew, 0, buffernew.Length,
+                            SocketFlags.None,
+                            new AsyncCallback(ReceiveCallback), obj);
+                    }
+                }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -149,5 +223,7 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
+
+        
     }
 }
