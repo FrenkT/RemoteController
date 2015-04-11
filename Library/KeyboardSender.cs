@@ -128,8 +128,39 @@ namespace Utils.KeyboardSender
         public const uint KEY_X = 0x58;       // X key
         public const uint KEY_Y = 0x59;       // Y key
         public const uint KEY_Z = 0x5A;       // Z key
-        
-        
+
+
+        public static readonly Dictionary<string, ushort> mycodes = new Dictionary<string, ushort>(){
+            {"A", 0x41},
+            {"B", 0x42},
+            {"C", 0x43},
+            {"D", 0x44},
+            {"E", 0x45},
+            {"F", 0x46},
+            {"G", 0x47},
+            {"H", 0x48},
+            {"I", 0x49},
+            {"J", 0x4A},
+            {"K", 0x4B},
+            {"L", 0x4C},
+            {"M", 0x4D},
+            {"N", 0x4E},
+            {"O", 0x4F},
+            {"P", 0x50},
+            {"Q", 0x51},
+            {"R", 0x52},
+            {"S", 0x53},
+            {"T", 0x54},
+            {"U", 0x55},
+            {"V", 0x56},
+            {"W", 0x57},
+            {"X", 0x58},
+            {"Y", 0x59},
+            {"Z", 0x5A},
+            {"RightShift", 0xa1},
+            {"LeftShift", 160},
+        };
+
 
         public static void SendKeyPress(KeyCode keyCode)
         {
@@ -167,7 +198,7 @@ namespace Utils.KeyboardSender
             SendInput(2, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
 
-        public static void SendKeyDown(Key keyCode)
+        public static void SendKeyDown(string k)
         {
             INPUT input = new INPUT
             {
@@ -176,7 +207,7 @@ namespace Utils.KeyboardSender
                 {
                     ki = new KEYBDINPUT
                     {
-                        wVk = 0x44,
+                        wVk = mycodes[k],
                         wScan = 0,
                         dwFlags = 0,
                         dwExtraInfo = IntPtr.Zero,
@@ -188,7 +219,7 @@ namespace Utils.KeyboardSender
             SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
 
-        public static void SendKeyUP(Key keyCode)
+        public static void SendKeyUP(string k)
         {
             INPUT input = new INPUT
             {
@@ -197,7 +228,7 @@ namespace Utils.KeyboardSender
                 {
                     ki = new KEYBDINPUT
                     {
-                        wVk = 0x44,
+                        wVk = mycodes[k],
                         wScan = 0,
                         dwFlags = 2,
                         dwExtraInfo = IntPtr.Zero,
@@ -213,121 +244,25 @@ namespace Utils.KeyboardSender
         {
             #region Media
 
-            /// <summary>
-            /// Next track if a song is playing
-            /// </summary>
             MEDIA_NEXT_TRACK = 0xb0,
 
-            /// <summary>
-            /// Play pause
-            /// </summary>
             MEDIA_PLAY_PAUSE = 0xb3,
 
-            /// <summary>
-            /// Previous track
-            /// </summary>
             MEDIA_PREV_TRACK = 0xb1,
 
-            /// <summary>
-            /// Stop
-            /// </summary>
             MEDIA_STOP = 0xb2,
 
             #endregion
 
             #region math
 
-            /// <summary>Key "+"</summary>
             ADD = 0x6b,
-            /// <summary>
-            /// "*" key
-            /// </summary>
+
             MULTIPLY = 0x6a,
 
-            /// <summary>
-            /// "/" key
-            /// </summary>
             DIVIDE = 0x6f,
 
-            /// <summary>
-            /// Subtract key "-"
-            /// </summary>
             SUBTRACT = 0x6d,
-
-            #endregion
-
-            #region Browser
-            /// <summary>
-            /// Go Back
-            /// </summary>
-            BROWSER_BACK = 0xa6,
-            /// <summary>
-            /// Favorites
-            /// </summary>
-            BROWSER_FAVORITES = 0xab,
-            /// <summary>
-            /// Forward
-            /// </summary>
-            BROWSER_FORWARD = 0xa7,
-            /// <summary>
-            /// Home
-            /// </summary>
-            BROWSER_HOME = 0xac,
-            /// <summary>
-            /// Refresh
-            /// </summary>
-            BROWSER_REFRESH = 0xa8,
-            /// <summary>
-            /// browser search
-            /// </summary>
-            BROWSER_SEARCH = 170,
-            /// <summary>
-            /// Stop
-            /// </summary>
-            BROWSER_STOP = 0xa9,
-            #endregion
-
-            #region Numpad numbers
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD0 = 0x60,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD1 = 0x61,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD2 = 0x62,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD3 = 0x63,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD4 = 100,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD5 = 0x65,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD6 = 0x66,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD7 = 0x67,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD8 = 0x68,
-            /// <summary>
-            /// 
-            /// </summary>
-            NUMPAD9 = 0x69,
 
             #endregion
 

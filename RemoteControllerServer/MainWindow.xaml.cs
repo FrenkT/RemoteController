@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
+using Utils.KeyboardSender;
 
 namespace RemoteControllerServer
 {
@@ -235,11 +236,11 @@ namespace RemoteControllerServer
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
             {
-
+                KeyboardSender.SendKeyUP(words[1]);
             }
             if (words[1] == "DOWN")
             {
-
+                KeyboardSender.SendKeyDown(words[1]);
             }
         }
     }
