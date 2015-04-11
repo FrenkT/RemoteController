@@ -24,7 +24,7 @@ namespace RemoteController
         byte[] bytes = new byte[1024];
         Socket senderSock, senderSock_Keyboard, senderSock_mouse;
         String workingServerIp = "";
-        String workingPort = "";
+        int workingPort = 0;
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
@@ -38,65 +38,20 @@ namespace RemoteController
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
+            SocketTCP_Connection();
             /*
-            IPEndPoint ipEndPoint = null;
-            int p = Convert.ToInt32(workingPort);
+            string theMessageToSend = workingPassword;
+            byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
 
-            // Create one SocketPermission for socket access restrictions 
-            SocketPermission permission = new SocketPermission(
-                NetworkAccess.Connect,    // Connection permission 
-                TransportType.Tcp,        // Defines transport types 
-                "",                       // Gets the IP addresses 
-                SocketPermission.AllPorts // All ports 
-                );
-
-            // Ensures the code to have permission to access a Socket 
-            permission.Demand();
-
-            // Gets first IP address associated with a localhost 
-            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
-
-            try
-            {
-                // Creates a network endpoint 
-                ipEndPoint = new IPEndPoint(ipAddr, p);
-            }
-            catch (ArgumentNullException)
-            {
-                throw new ArgumentNullException();
-            }
-
-            // Create one Socket object to setup Tcp connection 
-            senderSock = new Socket(
-                ipAddr.AddressFamily,// Specifies the addressing scheme 
-                SocketType.Stream,   // The type of socket  
-                ProtocolType.Tcp     // Specifies the protocols  
-                );
-
-            senderSock.NoDelay = false;   // Using the Nagle algorithm 
-            try
-            {
-                // Establishes a connection to a remote host 
-                senderSock.Connect(ipEndPoint);
-            }
-            catch (ArgumentNullException)
-            {
-                //address is null.
-                throw new ArgumentNullException();
-            }
-            catch (ArgumentException)
-            {
-                // The length of address is zero.
-                throw new ArgumentException();
-            }
-            catch (SocketException)
-            {
-                // An error occurred when attempting to access the socket.
-                throw new SocketException();
+            // Sends data to a connected Socket. 
+            int bytesSend = senderSock.Send(msg);
+            int ricevo = ReceiveDataFromServer();
+            if (ricevo == 1) {
+                // client ok
             }
             */
-            SocketTCP_Connection();            
-            //SocketTCP_Keyboard();
+            // se pass ok vai attiva tutto il resto
+            SocketTCP_Keyboard();
             //SocketUPD_Mouse();
 
             tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
@@ -106,6 +61,25 @@ namespace RemoteController
             Disconnect_Button.IsEnabled = true;
         }
 
+        private int ReceiveDataFromServer()
+        {
+            int ricevo = 0;
+            try
+            {
+                // Receives data from a bound Socket. 
+                int bytesRec = senderSock.Receive(bytes);
+
+                // Converts byte array to string 
+                String theMessageToReceive = Encoding.Unicode.GetString(bytes, 0, bytesRec);
+                if (theMessageToReceive.CompareTo("ok") == 0) {
+                    ricevo = 1;
+                }
+                
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+
+            return ricevo;
+        }
 
         private void SocketTCP_Connection(){
 
@@ -172,7 +146,7 @@ namespace RemoteController
         private void SocketTCP_Keyboard() {
             
             IPEndPoint ipEndPoint = null;
-            int p = Convert.ToInt32(workingPort+1);
+            int p = workingPort+1;
 
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
@@ -231,7 +205,7 @@ namespace RemoteController
         private void SocketUPD_Mouse() {
             
             IPEndPoint ipEndPoint = null;
-            int p = Convert.ToInt32(workingPort + 2);
+            int p = workingPort + 2;
 
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
@@ -381,7 +355,7 @@ namespace RemoteController
                     }
 
                     workingServerIp = TextBox_AddIp.Text;
-                    workingPort = TextBox_AddPort.Text;
+                    workingPort = int.Parse(TextBox_AddPort.Text);
                     workingPassword = TextBox_AddPassword.Text;
                 }
                 catch (Exception exc) { MessageBox.Show(exc.ToString()); }
