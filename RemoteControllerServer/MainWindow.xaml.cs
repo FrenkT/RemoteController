@@ -217,7 +217,7 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
-        /*
+        
         public void ReceiveCallback(IAsyncResult ar)
         {
             try
@@ -244,6 +244,8 @@ namespace RemoteControllerServer
                     content += Encoding.Unicode.GetString(buffer, 0,
                         bytesRead);
 
+                    Parse_KB_Event(content);
+
                     // If message contains "<Client Quit>", finish receiving
                     if (content.IndexOf("<Client Quit>") > -1)
                     {
@@ -267,7 +269,6 @@ namespace RemoteControllerServer
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        */
 
 
         private void Close_Click(object sender, RoutedEventArgs e)
