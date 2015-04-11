@@ -73,7 +73,7 @@ namespace RemoteControllerServer
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             */
             Create_TCPConnection();
-            Create_TCPConnection_Keyboard();
+            //Create_TCPConnection_Keyboard();
         }
 
         public static string GetIP4Address()
@@ -140,8 +140,9 @@ namespace RemoteControllerServer
         }
 
         private void Create_TCPConnection_Keyboard() {
-            String locIp = "127.0.0.1";
+            // String locIp = "127.0.0.1";
             // trovare metodo che definisca dinamicamente ip macchina nella rete
+            String locIp = GetIP4Address();
             // String locIp = "169.254.90.28";
             int locPort = 4511;
             try
@@ -196,14 +197,11 @@ namespace RemoteControllerServer
                 // Places a Socket in a listening state and specifies the maximum 
                 // Length of the pending connections queue 
                 sListener.Listen(10);
-                sListener2.Listen(1);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                 // Accepting connections asynchronously gives you the ability to send and receive data within a separate execution thread
                 // Begins an asynchronous operation to accept an incoming connection attempt.
                 sListener.BeginAccept(aCallback, sListener);
-                sListener2.BeginAccept(aCallback2, sListener2);
                 /*
                     BeginAccept(AsyncCallback callback, object state):
                     Essentially, after calling the Listen() method of the main Socket object, you call this asynchronous

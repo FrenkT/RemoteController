@@ -96,7 +96,7 @@ namespace RemoteController
             }
             */
             SocketTCP_Connection();            
-            SocketTCP_Keyboard();
+            //SocketTCP_Keyboard();
             //SocketUPD_Mouse();
 
             tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
