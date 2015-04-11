@@ -21,9 +21,11 @@
         <Label Content="Port:" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.237,0.154" Height="23" Width="70"/>
         <TextBox x:Name="TextBox_AddPort" HorizontalAlignment="Left" Height="23" Margin="133,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Grid.ColumnSpan="2"/>
         <Button x:Name="EditItem_Button" Content="Edit Item" Grid.Column="1" HorizontalAlignment="Left" Margin="50,143,0,0" VerticalAlignment="Top" Width="75" Click="Edit_Item_Click"/>
-        <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,501,0,0" TextWrapping="Wrap" Text="Not connected" VerticalAlignment="Top" Width="423" Height="23" Grid.ColumnSpan="3"/>
+        <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,501,0,-1" TextWrapping="Wrap" Text="Not connected" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
         <Button x:Name="Connect_Button" Content="Connect" HorizontalAlignment="Left" Margin="14,294,0,0" VerticalAlignment="Top" Width="120" Click="Connect_Click" Foreground="#FFF9F9F9" Background="Black"/>
-        <TextBlock x:Name="tbKeyboardCapture" HorizontalAlignment="Left" Margin="0,473,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="423" Height="23" Grid.ColumnSpan="3"/>
+        <TextBlock x:Name="tbKeyboardCapture" HorizontalAlignment="Left" Margin="0,429,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
+        <TextBlock x:Name="tbKeyboardConnection" HorizontalAlignment="Left" Margin="0,478,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Keyboard"/>
+        <TextBlock x:Name="tbMouseConnection" HorizontalAlignment="Left" Margin="0,455,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Mouse"/>
 
     </Grid>
 </Window>
