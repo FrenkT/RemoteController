@@ -11,8 +11,8 @@ namespace RemoteControllerServer
     {
 
         SocketPermission permission;
-        Socket sListener;
-        IPEndPoint ipEndPoint;
+        Socket sListener, sListener2;
+        IPEndPoint ipEndPoint, ipEndPoint2;
         Socket handler;
 
         private TextBox tbAux = new TextBox();
@@ -29,7 +29,10 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
+            /*
             String locIp = "127.0.0.1";
+            // trovare metodo che definisca dinamicamente ip macchina nella rete
+            // String locIp = "169.254.90.28";
             int locPort = 4510;
             try
             {
@@ -68,8 +71,123 @@ namespace RemoteControllerServer
                 StartListen_Button.IsEnabled = true;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            */
+            Create_TCPConnection();
+            Create_TCPConnection_Keyboard();
         }
 
+        public static string GetIP4Address()
+        {
+            string IP4Address = String.Empty;
+
+            foreach (IPAddress IPA in Dns.GetHostAddresses(Dns.GetHostName()))
+            {
+                if (IPA.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    IP4Address = IPA.ToString();
+                    break;
+                }
+            }
+
+            return IP4Address;
+        }
+
+        private void Create_TCPConnection() {
+            
+            //String locIp = "127.0.0.1";
+            // trovare metodo che definisca dinamicamente ip macchina nella rete
+            String locIp = GetIP4Address();
+            // String locIp = "169.254.90.28";
+            int locPort = 4510;
+            try
+            {
+                // Creates one SocketPermission object for access restrictions
+                permission = new SocketPermission(
+                NetworkAccess.Accept,     // Allowed to accept connections 
+                TransportType.Tcp,        // Defines transport types 
+                "",                       // The IP addresses of local host 
+                SocketPermission.AllPorts // Specifies all ports 
+                );
+
+                // Listening Socket object 
+                sListener = null;
+
+                // Ensures the code to have permission to access a Socket 
+                permission.Demand();
+
+
+                IPAddress ipAddr = IPAddress.Parse(locIp);
+
+                // Creates a network endpoint 
+                ipEndPoint = new IPEndPoint(ipAddr, locPort);
+
+                // Create one Socket object to listen the incoming connection 
+                sListener = new Socket(
+                    ipAddr.AddressFamily,
+                    SocketType.Stream,
+                    ProtocolType.Tcp
+                    );
+
+                // Associates a Socket with a local endpoint 
+                sListener.Bind(ipEndPoint);
+
+                //tbConnectionStatus.Text = "Server started.";
+
+                Start_Button.IsEnabled = false;
+                StartListen_Button.IsEnabled = true;
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }    
+        }
+
+        private void Create_TCPConnection_Keyboard() {
+            String locIp = "127.0.0.1";
+            // trovare metodo che definisca dinamicamente ip macchina nella rete
+            // String locIp = "169.254.90.28";
+            int locPort = 4511;
+            try
+            {
+                // Creates one SocketPermission object for access restrictions
+                permission = new SocketPermission(
+                NetworkAccess.Accept,     // Allowed to accept connections 
+                TransportType.Tcp,        // Defines transport types 
+                "",                       // The IP addresses of local host 
+                SocketPermission.AllPorts // Specifies all ports 
+                );
+
+                // Listening Socket object 
+                sListener2 = null;
+
+                // Ensures the code to have permission to access a Socket 
+                permission.Demand();
+
+                IPAddress ipAddr = IPAddress.Parse(locIp);
+
+                // Creates a network endpoint 
+                ipEndPoint2 = new IPEndPoint(ipAddr, locPort);
+
+                // Create one Socket object to listen the incoming connection 
+                sListener2 = new Socket(
+                    ipAddr.AddressFamily,
+                    SocketType.Stream,
+                    ProtocolType.Tcp
+                    );
+
+                // Associates a Socket with a local endpoint 
+                sListener2.Bind(ipEndPoint2);
+
+                //tbConnectionStatus.Text = "Server started.";
+                //tbKeyboardStatus.Text = "Server started.";
+                
+                Start_Button.IsEnabled = false;
+                StartListen_Button.IsEnabled = true;
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+        }
+        
+        private void Create_UDPConnection_Mouse() { 
+            
+        }
+        
         private void Listen_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -78,13 +196,14 @@ namespace RemoteControllerServer
                 // Places a Socket in a listening state and specifies the maximum 
                 // Length of the pending connections queue 
                 sListener.Listen(10);
-
+                sListener2.Listen(1);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-
+                AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                 // Accepting connections asynchronously gives you the ability to send and receive data within a separate execution thread
                 // Begins an asynchronous operation to accept an incoming connection attempt.
                 sListener.BeginAccept(aCallback, sListener);
+                sListener2.BeginAccept(aCallback2, sListener2);
                 /*
                     BeginAccept(AsyncCallback callback, object state):
                     Essentially, after calling the Listen() method of the main Socket object, you call this asynchronous

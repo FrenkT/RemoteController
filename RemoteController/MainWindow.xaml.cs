@@ -22,7 +22,7 @@ namespace RemoteController
 
         // Receiving byte array  
         byte[] bytes = new byte[1024];
-        Socket senderSock;
+        Socket senderSock, senderSock_Keyboard, senderSock_mouse;
         String workingServerIp = "";
         String workingPort = "";
         String workingPassword = "";
@@ -38,6 +38,7 @@ namespace RemoteController
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
+            /*
             IPEndPoint ipEndPoint = null;
             int p = Convert.ToInt32(workingPort);
 
@@ -93,23 +94,198 @@ namespace RemoteController
                 // An error occurred when attempting to access the socket.
                 throw new SocketException();
             }
-
+            */
+            SocketTCP_Connection();            
+            SocketTCP_Keyboard();
+            //SocketUPD_Mouse();
 
             tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
+            
 
             Connect_Button.IsEnabled = false;
             Disconnect_Button.IsEnabled = true;
         }
 
-        /*
-        private void sendUsernPasswd(String u, String p) { 
-            // Sending User+Passwd
-            UserClient Uclient = new UserClient();
-            Uclient.setUsername(u);
-            Uclient.setPassword(p);
-           
+
+        private void SocketTCP_Connection(){
+
+            IPEndPoint ipEndPoint = null;
+            //int p = Convert.ToInt32(workingPort);
+            int p = 4510;
+            // Create one SocketPermission for socket access restrictions 
+            SocketPermission permission = new SocketPermission(
+                NetworkAccess.Connect,    // Connection permission 
+                TransportType.Tcp,        // Defines transport types 
+                "",                       // Gets the IP addresses 
+                SocketPermission.AllPorts // All ports 
+                );
+
+            // Ensures the code to have permission to access a Socket 
+            permission.Demand();
+
+            // Gets first IP address associated with a localhost 
+            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
+
+            try
+            {
+                // Creates a network endpoint 
+                ipEndPoint = new IPEndPoint(ipAddr, p);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new ArgumentNullException();
+            }
+
+            // Create one Socket object to setup Tcp connection 
+            senderSock = new Socket(
+                ipAddr.AddressFamily,// Specifies the addressing scheme 
+                SocketType.Stream,   // The type of socket  
+                ProtocolType.Tcp     // Specifies the protocols  
+                );
+
+            senderSock.NoDelay = false;   // Using the Nagle algorithm 
+            try
+            {
+                // Establishes a connection to a remote host 
+                senderSock.Connect(ipEndPoint);
+            }
+            catch (ArgumentNullException)
+            {
+                //address is null.
+                ArgumentNullException e = new ArgumentNullException();
+                throw e;
+            }
+            catch (ArgumentException)
+            {
+                // The length of address is zero.
+                ArgumentException e = new ArgumentException();
+                throw e;
+            }
+            catch (SocketException)
+            {
+                // An error occurred when attempting to access the socket.
+                SocketException e = new SocketException();
+                throw e;
+            }
         }
-        */
+        
+        private void SocketTCP_Keyboard() {
+            
+            IPEndPoint ipEndPoint = null;
+            int p = Convert.ToInt32(workingPort+1);
+
+            // Create one SocketPermission for socket access restrictions 
+            SocketPermission permission = new SocketPermission(
+                NetworkAccess.Connect,    // Connection permission 
+                TransportType.Tcp,        // Defines transport types 
+                "",                       // Gets the IP addresses 
+                SocketPermission.AllPorts // All ports 
+                );
+
+            // Ensures the code to have permission to access a Socket 
+            permission.Demand();
+
+            // Gets first IP address associated with a localhost 
+            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
+
+            try
+            {
+                // Creates a network endpoint 
+                ipEndPoint = new IPEndPoint(ipAddr, p);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new ArgumentNullException();
+            }
+
+            // Create one Socket object to setup Tcp connection 
+            senderSock_Keyboard = new Socket(
+                ipAddr.AddressFamily,// Specifies the addressing scheme 
+                SocketType.Stream,   // The type of socket  
+                ProtocolType.Tcp     // Specifies the protocols  
+                );
+
+            senderSock_Keyboard.NoDelay = false;   // Using the Nagle algorithm 
+            try
+            {
+                // Establishes a connection to a remote host 
+                senderSock_Keyboard.Connect(ipEndPoint);
+            }
+            catch (ArgumentNullException)
+            {
+                //address is null.
+                throw new ArgumentNullException();
+            }
+            catch (ArgumentException)
+            {
+                // The length of address is zero.
+                throw new ArgumentException();
+            }
+            catch (SocketException)
+            {
+                // An error occurred when attempting to access the socket.
+                throw new SocketException();
+            }
+        }
+
+        private void SocketUPD_Mouse() {
+            
+            IPEndPoint ipEndPoint = null;
+            int p = Convert.ToInt32(workingPort + 2);
+
+            // Create one SocketPermission for socket access restrictions 
+            SocketPermission permission = new SocketPermission(
+                NetworkAccess.Connect,    // Connection permission 
+                TransportType.Udp,        // Defines transport types 
+                "",                       // Gets the IP addresses 
+                SocketPermission.AllPorts // All ports 
+                );
+
+            // Ensures the code to have permission to access a Socket 
+            permission.Demand();
+
+            // Gets first IP address associated with a localhost 
+            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
+
+            try
+            {
+                // Creates a network endpoint 
+                ipEndPoint = new IPEndPoint(ipAddr, p);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new ArgumentNullException();
+            }
+
+            // Create one Socket object to setup Tcp connection 
+            senderSock_mouse = new Socket(
+                ipAddr.AddressFamily,// Specifies the addressing scheme 
+                SocketType.Dgram,   // The type of socket  
+                ProtocolType.Udp     // Specifies the protocols  
+                );
+
+            senderSock_mouse.NoDelay = false;   // Using the Nagle algorithm 
+            try
+            {
+                // Establishes a connection to a remote host 
+                senderSock_mouse.Connect(ipEndPoint);
+            }
+            catch (ArgumentNullException)
+            {
+                //address is null.
+                throw new ArgumentNullException();
+            }
+            catch (ArgumentException)
+            {
+                // The length of address is zero.
+                throw new ArgumentException();
+            }
+            catch (SocketException)
+            {
+                // An error occurred when attempting to access the socket.
+                throw new SocketException();
+            }
+        }
 
         /*public string GetMD5(String password)
         {
@@ -130,7 +306,9 @@ namespace RemoteController
             {
                 //Closes the Socket connection and releases all resources 
                 senderSock.Close();
-
+                //senderSock_Keyboard.Close();
+                //senderSock_mouse.Close();
+                
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected";
@@ -237,6 +415,11 @@ namespace RemoteController
             {
                 listBoxServers.Items.Add(s.name);
             }
+            TextBox_AddName.Clear();
+            TextBox_AddIp.Clear();
+            TextBox_AddPassword.Clear();
+            TextBox_AddPort.Clear();
+
         }
 
         private void Application_Startup(object sender, RoutedEventArgs e)
@@ -244,9 +427,21 @@ namespace RemoteController
             KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
         }
 
+        // si scatena quando il client schiaccia un tasta qualsiasi
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
-            this.Dispatcher.Invoke((Action)(() => { tbKeyboardCapture.Text += args.Key.ToString(); }));
+            this.Dispatcher.Invoke((Action)(() => {
+                // Sends data to a connected Socket. 
+                int bytesSend = 0;
+                string theMessageToSend = "ciao";
+                byte[] msg1 = Encoding.Unicode.GetBytes(theMessageToSend);
+                // Sends data to a connected Socket.
+                bytesSend = senderSock.Send(msg1);
+                
+                tbKeyboardCapture.Text = args.Key.ToString();
+                tbKeyboardConnection.Text = bytesSend.ToString();
+            }));
+                
         }
 
         private void Application_Exit(object sender, EventArgs e)
