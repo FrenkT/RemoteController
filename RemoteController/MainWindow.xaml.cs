@@ -25,6 +25,7 @@ namespace RemoteController
         Socket senderSock, senderSock_Keyboard, senderSock_mouse;
         String workingServerIp = "";
         int workingPort = 0;
+        int flag = 0;
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
@@ -141,6 +142,7 @@ namespace RemoteController
                 SocketException e = new SocketException();
                 throw e;
             }
+            flag = 1;
         }
         
         private void SocketTCP_Keyboard() {
@@ -439,9 +441,12 @@ namespace RemoteController
 
         private void SendKey(string pressType, System.Windows.Input.Key key)
         {
-            string kbEvent = pressType + "+" + key;
-            byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-            int bytesSend = senderSock.Send(ReadyKbEvent);
+            if (flag == 1) {
+                string kbEvent = pressType + "+" + key;
+                byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
+                int bytesSend = senderSock.Send(ReadyKbEvent);
+            }
+            
         }
 
     }
