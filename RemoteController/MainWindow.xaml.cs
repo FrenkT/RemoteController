@@ -430,7 +430,7 @@ namespace RemoteController
         // si scatena quando il client schiaccia un tasta qualsiasi
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
-            this.Dispatcher.Invoke((Action)(() => {
+            /*this.Dispatcher.Invoke((Action)(() => {
                 // Sends data to a connected Socket. 
                 int bytesSend = 0;
                 string theMessageToSend = "ciao";
@@ -440,13 +440,33 @@ namespace RemoteController
                 
                 tbKeyboardCapture.Text = args.Key.ToString();
                 tbKeyboardConnection.Text = bytesSend.ToString();
+            }));*/
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbKeyboardCapture.Text = "DOWN" + args.Key;
+                SendKey("DOWN", args.Key);
             }));
                 
+        }
+
+        void KListener_KeyUp(object sender, RawKeyEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() => { 
+                tbKeyboardCapture.Text = "UP" + args.Key;
+                SendKey("UP", args.Key);
+            }));
         }
 
         private void Application_Exit(object sender, EventArgs e)
         {
             KListener.Dispose();
+        }
+
+        private void SendKey(string pressType, System.Windows.Input.Key key)
+        {
+            string kbevent = pressType + "+" + key;
+            byte[] msg1 = Encoding.Unicode.GetBytes(kbevent);
+            int bytesSend = senderSock.Send(msg1);
         }
 
     }
