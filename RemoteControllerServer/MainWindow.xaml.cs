@@ -299,16 +299,16 @@ namespace RemoteControllerServer
         {
             //KeyboardSender.SendKeyPress();
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
-            /*if (words[0] == "UP")
+            if (words[0] == "UP")
             {
                 KeyboardSender.SendKeyUP(words[1]);
             }
-            if (words[1] == "DOWN")
+            if (words[0] == "DOWN")
             {
                 KeyboardSender.SendKeyDown(words[1]);
-            }*/
-            KeyboardSender.SendKeyDown(words[1]);
-            KeyboardSender.SendKeyUP(words[1]);
+            }
+            //KeyboardSender.SendKeyDown(words[1]);
+            //KeyboardSender.SendKeyUP(words[1]);
         }
     }
 }
