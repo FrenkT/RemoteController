@@ -118,7 +118,7 @@ namespace RemoteController
                 ProtocolType.Tcp     // Specifies the protocols  
                 );
 
-            senderSock.NoDelay = false;   // Using the Nagle algorithm 
+            senderSock.NoDelay = true;   // Using the Nagle algorithm 
             try
             {
                 // Establishes a connection to a remote host 
@@ -148,10 +148,10 @@ namespace RemoteController
         private void SocketTCP_Keyboard() {
             
             IPEndPoint ipEndPoint = null;
-            int p = workingPort+1;
+            int p = workingPort+10;
 
             // Create one SocketPermission for socket access restrictions 
-            SocketPermission permission = new SocketPermission(
+            SocketPermission permissionKb = new SocketPermission(
                 NetworkAccess.Connect,    // Connection permission 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
@@ -159,7 +159,7 @@ namespace RemoteController
                 );
 
             // Ensures the code to have permission to access a Socket 
-            permission.Demand();
+            permissionKb.Demand();
 
             // Gets first IP address associated with a localhost 
             IPAddress ipAddr = IPAddress.Parse(workingServerIp);
@@ -181,7 +181,7 @@ namespace RemoteController
                 ProtocolType.Tcp     // Specifies the protocols  
                 );
 
-            senderSock_Keyboard.NoDelay = false;   // Using the Nagle algorithm 
+            senderSock_Keyboard.NoDelay = true;   // Using the Nagle algorithm 
             try
             {
                 // Establishes a connection to a remote host 
@@ -240,7 +240,7 @@ namespace RemoteController
                 ProtocolType.Udp     // Specifies the protocols  
                 );
 
-            senderSock_mouse.NoDelay = false;   // Using the Nagle algorithm 
+            senderSock_mouse.NoDelay = true;   // Using the Nagle algorithm 
             try
             {
                 // Establishes a connection to a remote host 
