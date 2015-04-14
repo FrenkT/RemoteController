@@ -19,7 +19,6 @@ namespace RemoteController
 
     public partial class MainWindow : Window
     {
-
         // Receiving byte array  
         byte[] bytes = new byte[1024];
         Socket senderSock, senderSock_Keyboard, senderSock_mouse;
@@ -43,14 +42,6 @@ namespace RemoteController
             string theMessageToSend = workingPassword;
             byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
 
-            // Sends data to a connected Socket. 
-            /*
-            int bytesSend = senderSock.Send(msg);
-            int ricevo = ReceiveDataFromServer();
-            if (ricevo == 1) {
-                // client ok
-            }
-            */
             // se pass ok vai attiva tutto il resto
             SocketTCP_Keyboard();
             //SocketUPD_Mouse();
@@ -85,7 +76,6 @@ namespace RemoteController
         private void SocketTCP_Connection(){
 
             IPEndPoint ipEndPoint = null;
-            //int p = Convert.ToInt32(workingPort);
             int p = 4510;
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
@@ -263,19 +253,6 @@ namespace RemoteController
             }
         }
 
-        /*public string GetMD5(String password)
-        {
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            md5.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
-            byte[] result = md5.Hash;
-            StringBuilder str = new StringBuilder();
-            for (int i = 1; i < result.Length; i++)
-            {
-                str.Append(result[i].ToString("x2"));
-            }
-            return str.ToString();
-        }*/
-
         private void Disconnect_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -407,17 +384,6 @@ namespace RemoteController
         // si scatena quando il client schiaccia un tasta qualsiasi
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
-            /*this.Dispatcher.Invoke((Action)(() => {
-                // Sends data to a connected Socket. 
-                int bytesSend = 0;
-                string theMessageToSend = "ciao";
-                byte[] msg1 = Encoding.Unicode.GetBytes(theMessageToSend);
-                // Sends data to a connected Socket.
-                bytesSend = senderSock.Send(msg1);
-                
-                tbKeyboardCapture.Text = args.Key.ToString();
-                tbKeyboardConnection.Text = bytesSend.ToString();
-            }));*/
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbKeyboardCapture.Text = "DOWN" + args.Key;

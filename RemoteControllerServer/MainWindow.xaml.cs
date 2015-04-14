@@ -12,8 +12,8 @@ namespace RemoteControllerServer
     public partial class MainWindow : Window
     {
 
-        Socket sListener, sListener2;
-        IPEndPoint ipEndPoint, ipEndPoint2;
+        Socket sListener, sListenerKb;
+        IPEndPoint ipEndPoint, ipEndPointKb;
         Socket handler;
         String pass = "1234";
 
@@ -22,8 +22,6 @@ namespace RemoteControllerServer
         public MainWindow()
         {
             InitializeComponent();
-            //tbAux.SelectionChanged += tbAux_SelectionChanged;
-
             Start_Button.IsEnabled = true;
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = false;
@@ -31,10 +29,7 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            
             Create_TCPConnection();
-            
-            
             Create_TCPConnection_Keyboard();
         }
 
@@ -50,13 +45,10 @@ namespace RemoteControllerServer
                     break;
                 }
             }
-
             return IP4Address;
         }
 
         private void Create_TCPConnection() {
-            
-            // trovare metodo che definisca dinamicamente ip macchina nella rete
             String locIp = GetIP4Address();
             int locPort = 4510;
             try
@@ -75,7 +67,6 @@ namespace RemoteControllerServer
                 // Ensures the code to have permission to access a Socket 
                 permission.Demand();
 
-
                 IPAddress ipAddr = IPAddress.Parse(locIp);
 
                 // Creates a network endpoint 
@@ -91,8 +82,6 @@ namespace RemoteControllerServer
                 // Associates a Socket with a local endpoint 
                 sListener.Bind(ipEndPoint);
 
-                //tbConnectionStatus.Text = "Server started.";
-
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
             }
@@ -100,7 +89,6 @@ namespace RemoteControllerServer
         }
 
         private void Create_TCPConnection_Keyboard() {
-            // trovare metodo che definisca dinamicamente ip macchina nella rete
             String locIp = GetIP4Address();
             int locPort = 4520;
             try
@@ -114,7 +102,7 @@ namespace RemoteControllerServer
                 );
 
                 // Listening Socket object 
-                sListener2 = null;
+                sListenerKb = null;
 
                 // Ensures the code to have permission to access a Socket 
                 permissionKb.Demand();
@@ -122,20 +110,17 @@ namespace RemoteControllerServer
                 IPAddress ipAddr = IPAddress.Parse(locIp);
 
                 // Creates a network endpoint 
-                ipEndPoint2 = new IPEndPoint(ipAddr, locPort);
+                ipEndPointKb = new IPEndPoint(ipAddr, locPort);
 
                 // Create one Socket object to listen the incoming connection 
-                sListener2 = new Socket(
+                sListenerKb = new Socket(
                     ipAddr.AddressFamily,
                     SocketType.Stream,
                     ProtocolType.Tcp
                     );
 
                 // Associates a Socket with a local endpoint 
-                sListener2.Bind(ipEndPoint2);
-
-                //tbConnectionStatus.Text = "Server started.";
-                //tbKeyboardStatus.Text = "Server started.";
+                sListenerKb.Bind(ipEndPointKb);
                 
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
@@ -151,24 +136,16 @@ namespace RemoteControllerServer
         {
             try
             {
-
-                // Places a Socket in a listening state and specifies the maximum 
                 // Length of the pending connections queue 
                 sListener.Listen(10);
-                sListener2.Listen(10);
+                sListenerKb.Listen(10);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 // Accepting connections asynchronously gives you the ability to send and receive data within a separate execution thread
                 // Begins an asynchronous operation to accept an incoming connection attempt.
                 sListener.BeginAccept(aCallback, sListener);
                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
-                sListener2.BeginAccept(aCallback2, sListener2);
-                /*
-                    BeginAccept(AsyncCallback callback, object state):
-                    Essentially, after calling the Listen() method of the main Socket object, you call this asynchronous
-                    method and specify a call back function (1), which you designated to do the further processing related 
-                    to the client connection. The state object (2) can be null in this particular instance.
-                */
+                sListenerKb.BeginAccept(aCallback2, sListenerKb);
 
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 StartListen_Button.IsEnabled = false;
@@ -176,17 +153,9 @@ namespace RemoteControllerServer
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        /* 
-           The accept callback method is called when a new connection request is received on the socket
-           The accept callback method implements the AsyncCallback delegate; it returns a void and takes 
-           a single parameter of type IAsyncResult 
-        */
-
         public void AcceptCallback(IAsyncResult ar)
         {
             Socket listener = null;
-
-            // A new Socket to handle remote host communication 
             Socket handler = null;
             try
             {
@@ -210,6 +179,14 @@ namespace RemoteControllerServer
                     tbConnectionStatus.Text = "Connection accepted.";
                     tbKeyboardStatus.Text = "Connection Keyboard accepted.";
                 }));
+                handler.BeginReceive(
+                     buffer,        // An array of type Byt for received data 
+                     0,             // The zero-based position in the buffer  
+                     buffer.Length, // The number of bytes to receive 
+                     SocketFlags.None,// Specifies send and receive behaviors 
+                     new AsyncCallback(ReceiveCallback),//An AsyncCallback delegate 
+                     obj            // Specifies infomation for receive operation 
+                     );
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
 
                 listener.BeginAccept(aCallback, listener);
@@ -234,7 +211,6 @@ namespace RemoteControllerServer
                 // Received message 
                 string content = string.Empty;
 
-
                 // The number of bytes received. 
                 int bytesRead = handler.EndReceive(ar);
 
@@ -250,7 +226,7 @@ namespace RemoteControllerServer
                     {
                         // Convert byte array to string
                         string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
-                                            }
+                    }
                     else
                     {
                         // Continues to asynchronously receive data
@@ -258,7 +234,6 @@ namespace RemoteControllerServer
                         obj[0] = buffernew;
                         obj[1] = handler;
 
-                        // Call the BeginReceive() asynchronous function to wait for any socket write activity by the server.
                         handler.BeginReceive(buffernew, 0, buffernew.Length,
                             SocketFlags.None,
                             new AsyncCallback(ReceiveCallback), obj);
@@ -267,8 +242,6 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
-
-
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
@@ -287,6 +260,10 @@ namespace RemoteControllerServer
 
         private void Parse_KB_Event(string kbEvent)
         {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbKeyboardStatus.Text = "received -> " + kbEvent;
+            }));
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
             {
