@@ -197,7 +197,7 @@ namespace RemoteController
         private void SocketUPD_Mouse() {
             
             IPEndPoint ipEndPoint = null;
-            int p = workingPort + 2;
+            int p = workingPort + 20;
 
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
@@ -332,7 +332,6 @@ namespace RemoteController
                             TextBox_AddPassword.Text = server.password;
                         }
                     }
-
                     workingServerIp = TextBox_AddIp.Text;
                     workingPort = int.Parse(TextBox_AddPort.Text);
                     workingPassword = TextBox_AddPassword.Text;
