@@ -12,8 +12,8 @@ namespace RemoteControllerServer
     public partial class MainWindow : Window
     {
 
-        Socket sListener, sListenerKb;
-        IPEndPoint ipEndPoint, ipEndPointKb;
+        Socket sListener, sListenerKb, sListenerM;
+        IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         Socket handler;
         String pass = "1234";
 
@@ -128,8 +128,44 @@ namespace RemoteControllerServer
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
         
-        private void Create_UDPConnection_Mouse() { 
-            
+        private void Create_UDPConnection_Mouse() {
+            String locIp = GetIP4Address();
+            int locPort = 4530;
+            try
+            {
+                // Creates one SocketPermission object for access restrictions
+                SocketPermission permissionM = new SocketPermission(
+                NetworkAccess.Accept,     // Allowed to accept connections 
+                TransportType.Udp,        // Defines transport types 
+                "",                       // The IP addresses of local host 
+                SocketPermission.AllPorts // Specifies all ports 
+                );
+
+                // Listening Socket object 
+                sListenerM = null;
+
+                // Ensures the code to have permission to access a Socket 
+                permissionM.Demand();
+
+                IPAddress ipAddr = IPAddress.Parse(locIp);
+
+                // Creates a network endpoint 
+                ipEndPointM = new IPEndPoint(ipAddr, locPort);
+
+                // Create one Socket object to listen the incoming connection 
+                sListenerM = new Socket(
+                    ipAddr.AddressFamily,
+                    SocketType.Dgram,
+                    ProtocolType.Udp
+                    );
+
+                // Associates a Socket with a local endpoint 
+                sListenerM.Bind(ipEndPointM);
+
+                Start_Button.IsEnabled = false;
+                StartListen_Button.IsEnabled = true;
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
         
         private void Listen_Click(object sender, RoutedEventArgs e)
@@ -141,11 +177,14 @@ namespace RemoteControllerServer
                 sListenerKb.Listen(10);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                // Accepting connections asynchronously gives you the ability to send and receive data within a separate execution thread
-                // Begins an asynchronous operation to accept an incoming connection attempt.
+                // Connection
                 sListener.BeginAccept(aCallback, sListener);
+                // KB
                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                 sListenerKb.BeginAccept(aCallback2, sListenerKb);
+                // mouse
+                AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
+                sListenerKb.BeginAccept(aCallback3, sListenerM);
 
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 StartListen_Button.IsEnabled = false;
@@ -178,6 +217,7 @@ namespace RemoteControllerServer
                     
                     tbConnectionStatus.Text = "Connection accepted.";
                     tbKeyboardStatus.Text = "Connection Keyboard accepted.";
+                    tbMouseStatus.Text = "Connection Mouse accepted.";
                 }));
                 handler.BeginReceive(
                      buffer,        // An array of type Byt for received data 
