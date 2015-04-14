@@ -44,10 +44,11 @@ namespace RemoteController
 
             // se pass ok vai attiva tutto il resto
             SocketTCP_Keyboard();
-            //SocketUPD_Mouse();
+            SocketUPD_Mouse();
 
             tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
-            
+            tbKeyboardConnection.Text = "Client connected to " + senderSock_Keyboard.RemoteEndPoint.ToString();
+            tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
 
             Connect_Button.IsEnabled = false;
             Disconnect_Button.IsEnabled = true;
@@ -230,7 +231,6 @@ namespace RemoteController
                 ProtocolType.Udp     // Specifies the protocols  
                 );
 
-            senderSock_mouse.NoDelay = true;   // Using the Nagle algorithm 
             try
             {
                 // Establishes a connection to a remote host 
@@ -265,6 +265,8 @@ namespace RemoteController
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected";
+                tbKeyboardConnection.Text = "Not connected";
+                tbMouseConnection.Text = "Not connected";
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
