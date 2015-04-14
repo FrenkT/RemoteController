@@ -381,13 +381,12 @@ namespace RemoteController
             KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
         }
 
-        // si scatena quando il client schiaccia un tasta qualsiasi
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbKeyboardCapture.Text = "DOWN" + args.Key;
-                SendKey("DOWN", args.Key);
+                tbKeyboardCapture.Text = "DOWN" + args.VKCode ;
+                SendKey("DOWN", args.VKCode);
             }));
                 
         }
@@ -395,8 +394,8 @@ namespace RemoteController
         void KListener_KeyUp(object sender, RawKeyEventArgs args)
         {
             this.Dispatcher.Invoke((Action)(() => { 
-                tbKeyboardCapture.Text = "UP" + args.Key;
-                SendKey("UP", args.Key);
+                tbKeyboardCapture.Text = "UP" + args.VKCode;
+                SendKey("UP", args.VKCode);
             }));
         }
 
@@ -405,10 +404,10 @@ namespace RemoteController
             KListener.Dispose();
         }
 
-        private void SendKey(string pressType, System.Windows.Input.Key key)
+        private void SendKey(string pressType, int VKCode)
         {
             if (flag == 1) {
-                string kbEvent = pressType + "+" + key;
+                string kbEvent = pressType + "+" + VKCode;
                 byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
                 int bytesSend = senderSock.Send(ReadyKbEvent);
             }
