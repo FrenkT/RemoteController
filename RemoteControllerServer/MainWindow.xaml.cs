@@ -11,8 +11,6 @@ namespace RemoteControllerServer
 {
     public partial class MainWindow : Window
     {
-
-        SocketPermission permission;
         Socket sListener, sListener2;
         IPEndPoint ipEndPoint, ipEndPoint2;
         Socket handler;
@@ -34,8 +32,7 @@ namespace RemoteControllerServer
         {
             
             Create_TCPConnection();
-            
-            
+                        
             Create_TCPConnection_Keyboard();
         }
 
@@ -63,7 +60,7 @@ namespace RemoteControllerServer
             try
             {
                 // Creates one SocketPermission object for access restrictions
-                permission = new SocketPermission(
+                SocketPermission permission = new SocketPermission(
                 NetworkAccess.Accept,     // Allowed to accept connections 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // The IP addresses of local host 
@@ -103,11 +100,11 @@ namespace RemoteControllerServer
         private void Create_TCPConnection_Keyboard() {
             // trovare metodo che definisca dinamicamente ip macchina nella rete
             String locIp = GetIP4Address();
-            int locPort = 4511;
+            int locPort = 4520;
             try
             {
                 // Creates one SocketPermission object for access restrictions
-                permission = new SocketPermission(
+                SocketPermission permissionKb = new SocketPermission(
                 NetworkAccess.Accept,     // Allowed to accept connections 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // The IP addresses of local host 
@@ -118,7 +115,7 @@ namespace RemoteControllerServer
                 sListener2 = null;
 
                 // Ensures the code to have permission to access a Socket 
-                permission.Demand();
+                permissionKb.Demand();
 
                 IPAddress ipAddr = IPAddress.Parse(locIp);
 
@@ -156,7 +153,7 @@ namespace RemoteControllerServer
                 // Places a Socket in a listening state and specifies the maximum 
                 // Length of the pending connections queue 
                 sListener.Listen(10);
-                sListener2.Listen(1);
+                sListener2.Listen(10);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 // Accepting connections asynchronously gives you the ability to send and receive data within a separate execution thread
@@ -200,7 +197,7 @@ namespace RemoteControllerServer
                 handler = listener.EndAccept(ar);
 
                 // Using the Nagle algorithm 
-                handler.NoDelay = false;
+                handler.NoDelay = true;
 
                 // Creates one object array for passing data 
                 object[] obj = new object[2];

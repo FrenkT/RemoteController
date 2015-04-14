@@ -147,7 +147,7 @@ namespace RemoteController
         private void SocketTCP_Keyboard() {
             
             IPEndPoint ipEndPoint = null;
-            int p = workingPort+1;
+            int p = workingPort+10;
 
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permissionKb = new SocketPermission(
