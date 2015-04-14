@@ -85,8 +85,7 @@ namespace RemoteController
         private void SocketTCP_Connection(){
 
             IPEndPoint ipEndPoint = null;
-            //int p = Convert.ToInt32(workingPort);
-            int p = 4510;
+            int p = workingPort;
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
                 NetworkAccess.Connect,    // Connection permission 
@@ -118,7 +117,7 @@ namespace RemoteController
                 ProtocolType.Tcp     // Specifies the protocols  
                 );
 
-            senderSock.NoDelay = false;   // Using the Nagle algorithm 
+            senderSock.NoDelay = true;   // Using the Nagle algorithm 
             try
             {
                 // Establishes a connection to a remote host 

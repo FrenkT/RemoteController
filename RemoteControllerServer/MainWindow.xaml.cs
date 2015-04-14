@@ -200,7 +200,7 @@ namespace RemoteControllerServer
                 handler = listener.EndAccept(ar);
 
                 // Using the Nagle algorithm 
-                handler.NoDelay = false;
+                handler.NoDelay = true;
 
                 // Creates one object array for passing data 
                 object[] obj = new object[2];
@@ -293,7 +293,7 @@ namespace RemoteControllerServer
             {
                 KeyboardSender.SendKeyUP(words[1]);
             }
-            if (words[1] == "DOWN")
+            if (words[0] == "DOWN")
             {
                 KeyboardSender.SendKeyDown(words[1]);
             }
