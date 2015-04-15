@@ -79,9 +79,9 @@ namespace Utils.KeyboardSender
         public const uint KEYEVENTF_SCANCODE = 0x0008;
         public const uint XBUTTON1 = 0x0001;
         public const uint XBUTTON2 = 0x0002;
-        public const uint MOUSEEVENTF_MOVE = 0x0001;
-        public const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
-        public const uint MOUSEEVENTF_LEFTUP = 0x0004;
+        public const int MOUSEEVENTF_MOVE = 0x0001;
+        public const int MOUSEEVENTF_LEFTDOWN = 0x0002;
+        public const int MOUSEEVENTF_LEFTUP = 0x0004;
         public const uint MOUSEEVENTF_RIGHTDOWN = 0x0008;
         public const uint MOUSEEVENTF_RIGHTUP = 0x0010;
         public const uint MOUSEEVENTF_MIDDLEDOWN = 0x0020;
@@ -90,7 +90,7 @@ namespace Utils.KeyboardSender
         public const uint MOUSEEVENTF_XUP = 0x0100;
         public const uint MOUSEEVENTF_WHEEL = 0x0800;
         public const uint MOUSEEVENTF_VIRTUALDESK = 0x4000;
-        public const uint MOUSEEVENTF_ABSOLUTE = 0x8000;
+        public const int MOUSEEVENTF_ABSOLUTE = 0x8000;
         public const uint KEY_0 = 0x30;       // 0 key
         public const uint KEY_1 = 0x31;       // 1 key
         public const uint KEY_2 = 0x32;       // 2 key
@@ -231,6 +231,72 @@ namespace Utils.KeyboardSender
                         wVk = mycodes[k],
                         wScan = 0,
                         dwFlags = 2,
+                        dwExtraInfo = IntPtr.Zero,
+                    }
+                }
+            };
+
+            INPUT[] inputs = new INPUT[] { input };
+            SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+        }
+
+        public static void SendLeftUp(int x, int y)
+        {
+            INPUT input = new INPUT
+            {
+                type = INPUT_MOUSE,
+                u = new InputUnion
+                {
+                    mi = new MOUSEINPUT
+                    {
+                        dx = x,
+                        dy = y,
+                        mouseData = 0,
+                        dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP,
+                        dwExtraInfo = IntPtr.Zero, 
+                    }
+                }
+            };
+
+            INPUT[] inputs = new INPUT[] { input };
+            SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+        }
+
+        public static void SendLeftDown(int x, int y)
+        {
+            INPUT input = new INPUT
+            {
+                type = INPUT_MOUSE,
+                u = new InputUnion
+                {
+                    mi = new MOUSEINPUT
+                    {
+                        dx = x,
+                        dy = y,
+                        mouseData = 0,
+                        dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN,
+                        dwExtraInfo = IntPtr.Zero,
+                    }
+                }
+            };
+
+            INPUT[] inputs = new INPUT[] { input };
+            SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+        }
+
+        public static void SendMove(int x, int y)
+        {
+            INPUT input = new INPUT
+            {
+                type = INPUT_MOUSE,
+                u = new InputUnion
+                {
+                    mi = new MOUSEINPUT
+                    {
+                        dx = x,
+                        dy = y,
+                        mouseData = 0,
+                        dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE,
                         dwExtraInfo = IntPtr.Zero,
                     }
                 }

@@ -438,7 +438,7 @@ namespace RemoteController
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbMouseCapture.Text = "WHEEL, " + args.x + " - " + args.y + " - " + args.data;
+                tbMouseCapture.Text = "WHEEL " + args.x + " - " + args.y + " - " + args.data;
                 SendMouse("WHEEL", args.x, args.y, args.data);
             }));
         }
