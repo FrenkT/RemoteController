@@ -66,27 +66,27 @@ namespace Utils.Mouse
             {
                 case InterceptMouse.MouseMessages.WM_LBUTTONDOWN:
                     if (LeftDown != null)
-                        LeftDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        LeftDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 case InterceptMouse.MouseMessages.WM_LBUTTONUP:
                     if (LeftUp != null)
-                        LeftUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        LeftUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 case InterceptMouse.MouseMessages.WM_RBUTTONDOWN:
                     if (RightDown != null)
-                        RightDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        RightDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 case InterceptMouse.MouseMessages.WM_RBUTTONUP:
                     if (RightUp != null)
-                        RightUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        RightUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 case InterceptMouse.MouseMessages.WM_MOUSEMOVE:
                     if (MouseMove != null)
-                        MouseMove(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        MouseMove(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 case InterceptMouse.MouseMessages.WM_MOUSEWHEEL:
                     if (MouseWheel != null)
-                        MouseWheel(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                        MouseWheel(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.y, mouseStruct.mouseData, mouseStruct.flags));
                     break;
                 default:
                     break;
