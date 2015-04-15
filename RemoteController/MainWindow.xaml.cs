@@ -26,6 +26,7 @@ namespace RemoteController
         String workingServerIp = "";
         int workingPort = 0;
         int flag = 0;
+        int flag_start = 0;
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
@@ -41,39 +42,53 @@ namespace RemoteController
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
             SocketTCP_Connection();
-            string theMessageToSend = workingPassword;
+
+            string theMessageToSend = workingPassword + "<Client Quit>";
             byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
 
+            // Sends data to a connected Socket. 
+            int bytesSend = senderSock.Send(msg);
+            flag_start = ReceiveDataFromServer();
+
             // se pass ok vai attiva tutto il resto
-            SocketTCP_Keyboard();
-            SocketUPD_Mouse();
+            if (flag_start == 1)
+            {
+                SocketTCP_Keyboard();
+                SocketUPD_Mouse();
 
-            tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
-            tbKeyboardConnection.Text = "Client connected to " + senderSock_Keyboard.RemoteEndPoint.ToString();
-            tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
-
-            Connect_Button.IsEnabled = false;
-            Disconnect_Button.IsEnabled = true;
+                tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
+                tbKeyboardConnection.Text = "Client connected to " + senderSock_Keyboard.RemoteEndPoint.ToString();
+                tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
+                Connect_Button.IsEnabled = false;
+                Disconnect_Button.IsEnabled = true;
+            }
+            else 
+            {
+                //Closes the Socket connection and releases all resources 
+                senderSock.Close();
+                Disconnect_Button.IsEnabled = false;
+                Connect_Button.IsEnabled = true;
+                tbConnectionStatus.Text = "Not connected...wrong password";
+            } 
         }
 
         private int ReceiveDataFromServer()
         {
-            int ricevo = 0;
+            int appoggio = 0;
             try
             {
                 // Receives data from a bound Socket. 
                 int bytesRec = senderSock.Receive(bytes);
-
                 // Converts byte array to string 
                 String theMessageToReceive = Encoding.Unicode.GetString(bytes, 0, bytesRec);
                 if (theMessageToReceive.CompareTo("ok") == 0) {
-                    ricevo = 1;
+                    appoggio = 1;
                 }
                 
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
 
-            return ricevo;
+            return appoggio;
         }
 
         private void SocketTCP_Connection(){
@@ -205,7 +220,7 @@ namespace RemoteController
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
                 NetworkAccess.Connect,    // Connection permission 
-                TransportType.Udp,        // Defines transport types 
+                TransportType.Tcp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
                 SocketPermission.AllPorts // All ports 
                 );
@@ -229,8 +244,8 @@ namespace RemoteController
             // Create one Socket object to setup Tcp connection 
             senderSock_mouse = new Socket(
                 ipAddr.AddressFamily,// Specifies the addressing scheme 
-                SocketType.Dgram,   // The type of socket  
-                ProtocolType.Udp     // Specifies the protocols  
+                SocketType.Stream,   // The type of socket  
+                ProtocolType.Tcp     // Specifies the protocols  
                 );
 
             try
@@ -261,8 +276,8 @@ namespace RemoteController
             {
                 //Closes the Socket connection and releases all resources 
                 senderSock.Close();
-                //senderSock_Keyboard.Close();
-                //senderSock_mouse.Close();
+                senderSock_Keyboard.Close();
+                senderSock_mouse.Close();
                 
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
