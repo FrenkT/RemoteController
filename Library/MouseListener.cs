@@ -14,8 +14,14 @@ namespace Utils.Mouse
     {   
         private IntPtr hookId = IntPtr.Zero;
         private InterceptMouse.LowLevelMouseProc hookedLowLevelMouseProc;
-        //private delegate void MouseCallbackAsync(InterceptMouse.KeyEvent keyEvent, int vkCode);
-        public event EventHandler MouseAction;
+        private delegate void MouseCallbackAsync(InterceptMouse.MouseMessages mouseMessage, InterceptMouse.MSLLHOOKSTRUCT mouseStruct);
+        private MouseCallbackAsync hookedMouseCallbackAsync;
+        public event RawMouseEventHandler LeftDown;
+        public event RawMouseEventHandler LeftUp;
+        public event RawMouseEventHandler RightDown;
+        public event RawMouseEventHandler RightUp;
+        public event RawMouseEventHandler MouseMove;
+        public event RawMouseEventHandler MouseWheel;
 
         public MouseListener()
         {
@@ -23,8 +29,7 @@ namespace Utils.Mouse
 
             hookId = InterceptMouse.SetHook(hookedLowLevelMouseProc);
 
-            //hookedKeyboardCallbackAsync = new KeyboardCallbackAsync(KeyboardListener_KeyboardCallbackAsync);
-            MouseAction = delegate { };
+            hookedMouseCallbackAsync = new MouseCallbackAsync(MouseListener_MouseCallbackAsync);
         }
 
         ~MouseListener()
@@ -33,15 +38,18 @@ namespace Utils.Mouse
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam)
+        private IntPtr LowLevelMouseProc(int nCode, UIntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0)
             {
-                if (InterceptMouse.MouseMessages.WM_LBUTTONDOWN == (InterceptMouse.MouseMessages)wParam)
+                if (wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_LBUTTONDOWN ||
+                    wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_LBUTTONUP ||
+                    wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_MOUSEMOVE ||
+                    wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_MOUSEWHEEL ||
+                    wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_RBUTTONDOWN ||
+                    wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_RBUTTONUP)
                 {
-                InterceptMouse.MSLLHOOKSTRUCT hookStruct = (InterceptMouse.MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(InterceptMouse.MSLLHOOKSTRUCT));
-                //Console.WriteLine(hookStruct.pt.x + ", " + hookStruct.pt.y);
-                MouseAction(null, new EventArgs());
+                    hookedMouseCallbackAsync.BeginInvoke((InterceptMouse.MouseMessages)wParam.ToUInt32(), (InterceptMouse.MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(InterceptMouse.MSLLHOOKSTRUCT)), null, null);
                 }
             }
             return InterceptMouse.CallNextHookEx(hookId, nCode, wParam, lParam);
@@ -51,11 +59,63 @@ namespace Utils.Mouse
         {
             InterceptMouse.UnhookWindowsHookEx(hookId);
         }
+
+        void MouseListener_MouseCallbackAsync(InterceptMouse.MouseMessages mouseMessage, InterceptMouse.MSLLHOOKSTRUCT mouseStruct)
+        {
+            switch (mouseMessage)
+            {
+                case InterceptMouse.MouseMessages.WM_LBUTTONDOWN:
+                    if (LeftDown != null)
+                        LeftDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                case InterceptMouse.MouseMessages.WM_LBUTTONUP:
+                    if (LeftUp != null)
+                        LeftUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                case InterceptMouse.MouseMessages.WM_RBUTTONDOWN:
+                    if (RightDown != null)
+                        RightDown(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                case InterceptMouse.MouseMessages.WM_RBUTTONUP:
+                    if (RightUp != null)
+                        RightUp(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                case InterceptMouse.MouseMessages.WM_MOUSEMOVE:
+                    if (MouseMove != null)
+                        MouseMove(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                case InterceptMouse.MouseMessages.WM_MOUSEWHEEL:
+                    if (MouseWheel != null)
+                        MouseWheel(this, new RawMouseEventArgs(mouseStruct.pt.x, mouseStruct.pt.x, mouseStruct.mouseData, mouseStruct.flags));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
+
+    public class RawMouseEventArgs : EventArgs
+    {
+        public int x;
+        public int y;
+        public int data;
+        public uint flags;
+
+
+        public RawMouseEventArgs(int x, int y, int data, uint flags)
+        {
+            this.x = x;
+            this.y = y;
+            this.data = data;
+            this.flags = flags;
+        }
+    }
+
+    public delegate void RawMouseEventHandler(object sender, RawMouseEventArgs args);
 
     internal static class InterceptMouse
     {
-        public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+        public delegate IntPtr LowLevelMouseProc(int nCode, UIntPtr wParam, IntPtr lParam);
         public const int WH_MOUSE_LL = 14;
 
         public enum MouseMessages
@@ -79,7 +139,7 @@ namespace Utils.Mouse
         public struct MSLLHOOKSTRUCT
         {
             public POINT pt;
-            public uint mouseData;
+            public int mouseData;
             public uint flags;
             public uint time;
             public IntPtr dwExtraInfo;
@@ -103,7 +163,7 @@ namespace Utils.Mouse
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, UIntPtr wParam, IntPtr lParam);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);

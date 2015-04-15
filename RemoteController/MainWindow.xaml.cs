@@ -381,14 +381,59 @@ namespace RemoteController
         {
             KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
             KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
-            MListener.MouseAction += new EventHandler(Event);
+            MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
+            MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
+            MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
+            MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
+            MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
+            MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
         }
-        
-        private void Event(object sender, EventArgs e) 
+
+        void MListener_LeftDown(object sender, RawMouseEventArgs args)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbMouseCapture.Text = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
+                tbMouseCapture.Text = "LEFTDOWN " + args.x + " - " + args.y;
+            }));
+        }
+
+        void MListener_LeftUp(object sender, RawMouseEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = "LEFTUP " + args.x + " - " + args.y;
+            }));
+        }
+
+        void MListener_RightDown(object sender, RawMouseEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = "RIGHTDOWN " + args.x + " - " + args.y;
+            }));
+        }
+
+        void MListener_RightUp(object sender, RawMouseEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = "RIGHTUP " + args.x + " - " + args.y;
+            }));
+        }
+
+        void MListener_MouseMove(object sender, RawMouseEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = "MOVE, " + args.x + " - " + args.y;
+            }));
+        }
+
+        void MListener_MouseWheel(object sender, RawMouseEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = "WHEEL, " + args.x + " - " + args.y + " - " + args.data;
             }));
         }
 
@@ -421,8 +466,7 @@ namespace RemoteController
                 string kbEvent = pressType + "+" + key;
                 byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
                 int bytesSend = senderSock.Send(ReadyKbEvent);
-            }
-            
+            }           
         }
 
     }
