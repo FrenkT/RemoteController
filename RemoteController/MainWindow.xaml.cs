@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using Utils.Keyboard;
+using Utils.Mouse;
 
 namespace RemoteController
 {
@@ -29,6 +30,7 @@ namespace RemoteController
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
         KeyboardListener KListener = new KeyboardListener();
+        MouseListener MListener = new MouseListener();
 
         public MainWindow()
         {
@@ -379,9 +381,17 @@ namespace RemoteController
         {
             KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
             KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
+            MListener.MouseAction += new EventHandler(Event);
+        }
+        
+        private void Event(object sender, EventArgs e) 
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseCapture.Text = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
+            }));
         }
 
-        // si scatena quando il client schiaccia un tasta qualsiasi
         void KListener_KeyDown(object sender, RawKeyEventArgs args)
         {
             this.Dispatcher.Invoke((Action)(() =>
