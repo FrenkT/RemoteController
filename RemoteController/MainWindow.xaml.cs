@@ -484,21 +484,15 @@ namespace RemoteController
 
         private void SendKey(string pressType, int VKCode)
         {
-<<<<<<< HEAD
-            if (flag == 1) {
-                string kbEvent = pressType + "+" + VKCode;
-                byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                int bytesSend = senderSock.Send(ReadyKbEvent);
-=======
             if (senderSock_Keyboard != null)
             {
                 if (senderSock_Keyboard.Connected)
                 {
-                    string kbEvent = pressType + "+" + key;
+                    string kbEvent = pressType + "+" + VKCode;
                     byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                    int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
-                } 
-            }           
+                    int bytesSend = senderSock.Send(ReadyKbEvent);
+                }
+            }          
         }
 
         private void SendMouse(string mouseEventType, int x, int y, int data)
@@ -511,7 +505,6 @@ namespace RemoteController
                     byte[] ReadyMouseEvent = Encoding.Unicode.GetBytes(mouseEvent);
                     int bytesSend = senderSock_mouse.Send(ReadyMouseEvent);
                 } 
->>>>>>> origin/mouse
             }
         }
 

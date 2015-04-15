@@ -90,9 +90,6 @@ namespace Utils.KeyboardSender
         public const uint MOUSEEVENTF_XUP = 0x0100;
         public const uint MOUSEEVENTF_WHEEL = 0x0800;
         public const uint MOUSEEVENTF_VIRTUALDESK = 0x4000;
-<<<<<<< HEAD
-        public const uint MOUSEEVENTF_ABSOLUTE = 0x8000;
-=======
         public const int MOUSEEVENTF_ABSOLUTE = 0x8000;
         public const uint KEY_0 = 0x30;       // 0 key
         public const uint KEY_1 = 0x31;       // 1 key
@@ -200,7 +197,6 @@ namespace Utils.KeyboardSender
             INPUT[] inputs = new INPUT[] { input, input2 };
             SendInput(2, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
->>>>>>> origin/mouse
 
         public static void SendKeyDown(string k)
         {
@@ -242,8 +238,7 @@ namespace Utils.KeyboardSender
 
             INPUT[] inputs = new INPUT[] { input };
             SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
-<<<<<<< HEAD
-=======
+
         }
 
         public static void SendLeftUp(int x, int y)
@@ -832,7 +827,6 @@ namespace Utils.KeyboardSender
             /// Up arrow key
             /// </summary>
             UP = 0x26,
->>>>>>> origin/mouse
 
         }
     

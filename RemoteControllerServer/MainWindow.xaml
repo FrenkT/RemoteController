@@ -11,13 +11,8 @@
         <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,498,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
         <Button Name="Close_Button" Content="Close connection" HorizontalAlignment="Left" Margin="60,101,0,0" VerticalAlignment="Top" Width="120" Click="Close_Click" Background="Black" Foreground="White"/>
         <Button Name="StartListen_Button" Content="Start listening" HorizontalAlignment="Left" Margin="60,59,0,0" VerticalAlignment="Top" Width="120" Click="Listen_Click" Background="Black" Foreground="White"/>
-<<<<<<< HEAD
         <TextBlock x:Name="tbMouseStatus" HorizontalAlignment="Left" Margin="-1,438,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
         <TextBlock x:Name="tbKeyboardStatus" HorizontalAlignment="Left" Margin="0,464,-1,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
-=======
-        <TextBox x:Name="tbKeyboardStatus" HorizontalAlignment="Left" Height="29" Margin="0,464,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="358" Grid.ColumnSpan="2" Background="{x:Null}" Focusable="False" AllowDrop="False" IsTabStop="False"/>
-        <TextBox x:Name="tbMouseStatus" HorizontalAlignment="Left" Height="29" Margin="0,435,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="358" Grid.ColumnSpan="2" Background="{x:Null}" Focusable="False" AllowDrop="False" IsTabStop="False"/>
->>>>>>> origin/mouse
 
     </Grid>
 </Window>
