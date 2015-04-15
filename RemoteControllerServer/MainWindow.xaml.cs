@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
-using Utils.KeyboardSender;
+using Utils.InputGenerator;
 
 namespace RemoteControllerServer
 {
@@ -486,11 +486,11 @@ namespace RemoteControllerServer
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
             {
-                KeyboardSender.SendKeyUP(words[1]);
+                InputGenerator.SendKeyUP(words[1]);
             }
             if (words[0] == "DOWN")
             {
-                KeyboardSender.SendKeyDown(words[1]);
+                InputGenerator.SendKeyDown(words[1]);
             }
         }
 
@@ -503,15 +503,15 @@ namespace RemoteControllerServer
             string[] words = mouseEvent.Split('+');
             if (words[0] == "LEFTDOWN")
             {
-                KeyboardSender.SendLeftDown(int.Parse(words[1]), int.Parse(words[2]));
+                InputGenerator.SendLeftDown(int.Parse(words[1]), int.Parse(words[2]));
             }
             if (words[0] == "LEFTUP")
             {
-                KeyboardSender.SendLeftUp(int.Parse(words[1]), int.Parse(words[2]));
+                InputGenerator.SendLeftUp(int.Parse(words[1]), int.Parse(words[2]));
             }
             if (words[0] == "MOVE")
             {
-                KeyboardSender.SendMove(int.Parse(words[1]), int.Parse(words[2]));
+                InputGenerator.SendMove(int.Parse(words[1]), int.Parse(words[2]));
             }
         }
     }

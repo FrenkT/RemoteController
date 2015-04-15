@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 
-namespace Utils.KeyboardSender
+namespace Utils.InputGenerator
 {
-    public class KeyboardSender
+    public class InputGenerator
     {
         [DllImport("user32.dll")]
         public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
