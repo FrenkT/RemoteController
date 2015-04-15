@@ -394,6 +394,7 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "LEFTDOWN " + args.x + " - " + args.y;
+                SendMouse("LEFTDOWN", args.x, args.y, 0);
             }));
         }
 
@@ -402,6 +403,7 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "LEFTUP " + args.x + " - " + args.y;
+                SendMouse("LEFTUP", args.x, args.y, 0);
             }));
         }
 
@@ -410,6 +412,7 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "RIGHTDOWN " + args.x + " - " + args.y;
+                SendMouse("RIGHTDOWN", args.x, args.y, 0);
             }));
         }
 
@@ -418,6 +421,7 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "RIGHTUP " + args.x + " - " + args.y;
+                SendMouse("RIGHTUP", args.x, args.y, 0);
             }));
         }
 
@@ -425,7 +429,8 @@ namespace RemoteController
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbMouseCapture.Text = "MOVE, " + args.x + " - " + args.y;
+                tbMouseCapture.Text = "MOVE " + args.x + " - " + args.y;
+                SendMouse("MOVE", args.x, args.y, 0);
             }));
         }
 
@@ -434,6 +439,7 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "WHEEL, " + args.x + " - " + args.y + " - " + args.data;
+                SendMouse("WHEEL", args.x, args.y, args.data);
             }));
         }
 
@@ -462,11 +468,22 @@ namespace RemoteController
 
         private void SendKey(string pressType, System.Windows.Input.Key key)
         {
-            if (flag == 1) {
+            if (senderSock_Keyboard.Connected) 
+            {
                 string kbEvent = pressType + "+" + key;
                 byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                int bytesSend = senderSock.Send(ReadyKbEvent);
+                int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
             }           
+        }
+
+        private void SendMouse(string mouseEventType, int x, int y, int data)
+        {
+            if (senderSock_mouse.Connected)
+            {
+                string mouseEvent = mouseEventType + "+" + x + "+" + y + "+" + data;
+                byte[] ReadyMouseEvent = Encoding.Unicode.GetBytes(mouseEvent);
+                int bytesSend = senderSock_mouse.Send(ReadyMouseEvent);
+            }
         }
 
     }
