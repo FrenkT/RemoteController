@@ -315,5 +315,26 @@ namespace RemoteControllerServer
                 KeyboardSender.SendKeyDown(words[1]);
             }
         }
+
+        private void Parse_Mouse_Event(string mouseEvent)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbMouseStatus.Text = "received -> " + mouseEvent;
+            }));
+            string[] words = mouseEvent.Split('+');
+            if (words[0] == "LEFTDOWN")
+            {
+                KeyboardSender.SendLeftDown(int.Parse(words[1]), int.Parse(words[2]));
+            }
+            if (words[0] == "LEFTUP")
+            {
+                KeyboardSender.SendLeftUp(int.Parse(words[1]), int.Parse(words[2]));
+            }
+            if (words[0] == "MOVE")
+            {
+                KeyboardSender.SendMove(int.Parse(words[1]), int.Parse(words[2]));
+            }
+        }
     }
 }

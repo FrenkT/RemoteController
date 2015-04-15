@@ -26,6 +26,7 @@
         <TextBlock x:Name="tbKeyboardCapture" HorizontalAlignment="Left" Margin="0,429,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
         <TextBlock x:Name="tbKeyboardConnection" HorizontalAlignment="Left" Margin="0,478,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Keyboard"/>
         <TextBlock x:Name="tbMouseConnection" HorizontalAlignment="Left" Margin="0,455,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Mouse"/>
+        <TextBlock x:Name="tbMouseCapture" HorizontalAlignment="Left" Margin="0,406,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
 
     </Grid>
 </Window>
