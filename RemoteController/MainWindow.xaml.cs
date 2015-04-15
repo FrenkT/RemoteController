@@ -468,21 +468,27 @@ namespace RemoteController
 
         private void SendKey(string pressType, System.Windows.Input.Key key)
         {
-            if (senderSock_Keyboard.Connected) 
+            if (senderSock_Keyboard != null)
             {
-                string kbEvent = pressType + "+" + key;
-                byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
+                if (senderSock_Keyboard.Connected)
+                {
+                    string kbEvent = pressType + "+" + key;
+                    byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
+                    int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
+                } 
             }           
         }
 
         private void SendMouse(string mouseEventType, int x, int y, int data)
         {
-            if (senderSock_mouse.Connected)
+            if (senderSock_mouse != null)
             {
-                string mouseEvent = mouseEventType + "+" + x + "+" + y + "+" + data;
-                byte[] ReadyMouseEvent = Encoding.Unicode.GetBytes(mouseEvent);
-                int bytesSend = senderSock_mouse.Send(ReadyMouseEvent);
+                if (senderSock_mouse.Connected)
+                {
+                    string mouseEvent = mouseEventType + "+" + x + "+" + y + "+" + data;
+                    byte[] ReadyMouseEvent = Encoding.Unicode.GetBytes(mouseEvent);
+                    int bytesSend = senderSock_mouse.Send(ReadyMouseEvent);
+                } 
             }
         }
 
