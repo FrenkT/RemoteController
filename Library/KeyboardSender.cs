@@ -241,6 +241,25 @@ namespace Utils.KeyboardSender
 
         }
 
+        enum SystemMetric
+        {
+            SM_CXSCREEN = 0,
+            SM_CYSCREEN = 1,
+        }
+
+        [DllImport("user32.dll")]
+        static extern int GetSystemMetrics(SystemMetric smIndex);
+
+        public static int CalculateAbsoluteCoordinateX(int x)
+        {
+            return (x * 65536) / GetSystemMetrics(SystemMetric.SM_CXSCREEN);
+        }
+
+        public static int CalculateAbsoluteCoordinateY(int y)
+        {
+            return (y * 65536) / GetSystemMetrics(SystemMetric.SM_CYSCREEN);
+        }
+
         public static void SendLeftUp(int x, int y)
         {
             INPUT input = new INPUT
@@ -250,8 +269,8 @@ namespace Utils.KeyboardSender
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = x,
-                        dy = y,
+                        dx = CalculateAbsoluteCoordinateX(x),
+                        dy = CalculateAbsoluteCoordinateY(y),
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP,
                         dwExtraInfo = IntPtr.Zero, 
@@ -272,8 +291,8 @@ namespace Utils.KeyboardSender
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = x,
-                        dy = y,
+                        dx = CalculateAbsoluteCoordinateX(x),
+                        dy = CalculateAbsoluteCoordinateY(y),
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN,
                         dwExtraInfo = IntPtr.Zero,
@@ -294,8 +313,8 @@ namespace Utils.KeyboardSender
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = x,
-                        dy = y,
+                        dx = CalculateAbsoluteCoordinateX(x),
+                        dy = CalculateAbsoluteCoordinateY(y),
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE,
                         dwExtraInfo = IntPtr.Zero,
