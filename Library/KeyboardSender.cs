@@ -20,6 +20,15 @@ namespace Utils.KeyboardSender
         [DllImport("user32.dll")]
         public static extern IntPtr GetMessageExtraInfo();
 
+        [DllImport("user32.dll")]
+        static extern int GetSystemMetrics(SystemMetric smIndex);
+
+        enum SystemMetric
+        {
+            SM_CXSCREEN = 0,
+            SM_CYSCREEN = 1,
+        }
+
         public struct INPUT
         {
             public int type;
@@ -47,6 +56,7 @@ namespace Utils.KeyboardSender
             public Int32 time;
             public IntPtr dwExtraInfo;
         }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct KEYBDINPUT
         {
@@ -56,6 +66,7 @@ namespace Utils.KeyboardSender
             public uint time;
             public IntPtr dwExtraInfo;
         }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct HARDWAREINPUT
         {
@@ -86,40 +97,14 @@ namespace Utils.KeyboardSender
         public const uint MOUSEEVENTF_VIRTUALDESK = 0x4000;
         public const int MOUSEEVENTF_ABSOLUTE = 0x8000;
 
-        public static void SendKeyPress(KeyCode keyCode)
+        public static int CalculateAbsoluteCoordinateX(int x)
         {
-            INPUT input = new INPUT
-            {
-                type = INPUT_KEYBOARD,
-                u = new InputUnion
-                {
-                    ki = new KEYBDINPUT
-                    {
-                        wVk = 0x44,
-                        wScan = 0,
-                        dwFlags = 0,
-                        dwExtraInfo = IntPtr.Zero,
-                    }
-                }
-            };
+            return (x * 65536) / GetSystemMetrics(SystemMetric.SM_CXSCREEN);
+        }
 
-            INPUT input2 = new INPUT
-            {
-                type = INPUT_KEYBOARD,
-                u = new InputUnion
-                {
-                    ki = new KEYBDINPUT
-                    {
-                        wVk = 0x44,
-                        wScan = 0,
-                        dwFlags = 2,
-                        dwExtraInfo = IntPtr.Zero,
-                    }
-                }
-            };
-
-            INPUT[] inputs = new INPUT[] { input, input2 };
-            SendInput(2, inputs, Marshal.SizeOf(typeof(INPUT)));
+        public static int CalculateAbsoluteCoordinateY(int y)
+        {
+            return (y * 65536) / GetSystemMetrics(SystemMetric.SM_CYSCREEN);
         }
 
         public static void SendKeyDown(string k)
@@ -163,25 +148,6 @@ namespace Utils.KeyboardSender
             INPUT[] inputs = new INPUT[] { input };
             SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
 
-        }
-
-        enum SystemMetric
-        {
-            SM_CXSCREEN = 0,
-            SM_CYSCREEN = 1,
-        }
-
-        [DllImport("user32.dll")]
-        static extern int GetSystemMetrics(SystemMetric smIndex);
-
-        public static int CalculateAbsoluteCoordinateX(int x)
-        {
-            return (x * 65536) / GetSystemMetrics(SystemMetric.SM_CXSCREEN);
-        }
-
-        public static int CalculateAbsoluteCoordinateY(int y)
-        {
-            return (y * 65536) / GetSystemMetrics(SystemMetric.SM_CYSCREEN);
         }
 
         public static void SendLeftUp(int x, int y)
