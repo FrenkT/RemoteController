@@ -220,7 +220,7 @@ namespace RemoteController
             // Create one SocketPermission for socket access restrictions 
             SocketPermission permission = new SocketPermission(
                 NetworkAccess.Connect,    // Connection permission 
-                TransportType.Tcp,        // Defines transport types 
+                TransportType.Udp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
                 SocketPermission.AllPorts // All ports 
                 );
@@ -244,8 +244,8 @@ namespace RemoteController
             // Create one Socket object to setup Tcp connection 
             senderSock_mouse = new Socket(
                 ipAddr.AddressFamily,// Specifies the addressing scheme 
-                SocketType.Stream,   // The type of socket  
-                ProtocolType.Tcp     // Specifies the protocols  
+                SocketType.Dgram,   // The type of socket  
+                ProtocolType.Udp     // Specifies the protocols  
                 );
 
             try
@@ -410,7 +410,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "LEFTDOWN " + args.x + " - " + args.y;
-                SendMouse("LEFTDOWN", args.x, args.y, 0);
+                
+                    SendMouse("LEFTDOWN", args.x, args.y, 0);
             }));
         }
 
@@ -419,7 +420,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "LEFTUP " + args.x + " - " + args.y;
-                SendMouse("LEFTUP", args.x, args.y, 0);
+                
+                    SendMouse("LEFTUP", args.x, args.y, 0);
             }));
         }
 
@@ -428,7 +430,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "RIGHTDOWN " + args.x + " - " + args.y;
-                SendMouse("RIGHTDOWN", args.x, args.y, 0);
+                
+                    SendMouse("RIGHTDOWN", args.x, args.y, 0);
             }));
         }
 
@@ -437,7 +440,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "RIGHTUP " + args.x + " - " + args.y;
-                SendMouse("RIGHTUP", args.x, args.y, 0);
+                
+                    SendMouse("RIGHTUP", args.x, args.y, 0);
             }));
         }
 
@@ -446,7 +450,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "MOVE " + args.x + " - " + args.y;
-                SendMouse("MOVE", args.x, args.y, 0);
+                
+                    SendMouse("MOVE", args.x, args.y, 0);
             }));
         }
 
@@ -455,7 +460,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbMouseCapture.Text = "WHEEL " + args.x + " - " + args.y + " - " + args.data;
-                SendMouse("WHEEL", args.x, args.y, args.data);
+                
+                    SendMouse("WHEEL", args.x, args.y, args.data);
             }));
         }
 
@@ -464,7 +470,8 @@ namespace RemoteController
             this.Dispatcher.Invoke((Action)(() =>
             {
                 tbKeyboardCapture.Text = "DOWN" + args.VKCode ;
-                SendKey("DOWN", args.VKCode);
+                
+                    SendKey("DOWN", args.VKCode);
             }));
                 
         }
@@ -473,7 +480,8 @@ namespace RemoteController
         {
             this.Dispatcher.Invoke((Action)(() => { 
                 tbKeyboardCapture.Text = "UP" + args.VKCode;
-                SendKey("UP", args.VKCode);
+                
+                    SendKey("UP", args.VKCode);
             }));
         }
 
@@ -490,7 +498,7 @@ namespace RemoteController
                 {
                     string kbEvent = pressType + "+" + VKCode;
                     byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                    int bytesSend = senderSock.Send(ReadyKbEvent);
+                    int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
                 }
             }          
         }
