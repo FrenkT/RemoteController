@@ -15,7 +15,7 @@ namespace RemoteControllerServer
         Socket sListener, sListenerKb, sListenerM;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         EndPoint RemoteEndpoint;
-        Socket handler;
+        Socket handler, handlerKb, handlerM;
         String pass = "1234";
         int port_conn = 4510, port_kb = 4520, port_m = 4530;
         int flag_connection = 0;
@@ -176,9 +176,9 @@ namespace RemoteControllerServer
             try
             {
                 // Length of the pending connections queue 
-                sListener.Listen(10);
-                sListenerKb.Listen(10);
-                //sListenerM.Listen(10); // UDP è connectionless non necessita la listen
+                sListener.Listen(1);
+                sListenerKb.Listen(1);
+                //sListenerM.Listen(1); // UDP è connectionless non necessita la listen
                 
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
@@ -198,7 +198,7 @@ namespace RemoteControllerServer
                  send datagrams, and BeginReceiveFrom and EndReceiveFrom to receive datagrams.
                  */
                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback3);
-                //sListenerM.BeginAccept(aCallback3, sListenerM);
+                sListenerM.BeginAccept(aCallback3, sListenerM);
 
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 StartListen_Button.IsEnabled = false;
@@ -221,11 +221,7 @@ namespace RemoteControllerServer
                 
                 handler = listener.EndAccept(ar);
 
-                if (listener.ProtocolType.ToString().CompareTo("Tcp") == 0)
-                {
-                    // Using the Nagle algorithm 
-                    handler.NoDelay = true;
-                }
+                handler.NoDelay = true;
 
                 // Creates one object array for passing data 
                 object[] obj = new object[2];
@@ -319,6 +315,7 @@ namespace RemoteControllerServer
                     );   
                  
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback3);
+                listener.BeginAccept(aCallback, listener);
                 
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
@@ -385,13 +382,13 @@ namespace RemoteControllerServer
                 byte[] buffer = (byte[])obj[0];
 
                 // A Socket to handle remote host communication. 
-                handler = (Socket)obj[1];
+                handlerKb = (Socket)obj[1];
 
                 // Received message 
                 string content = string.Empty;
 
                 // The number of bytes received. 
-                int bytesRead = handler.EndReceive(ar);
+                int bytesRead = handlerKb.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
@@ -411,9 +408,9 @@ namespace RemoteControllerServer
                         // Continues to asynchronously receive data
                         byte[] buffernew = new byte[1024];
                         obj[0] = buffernew;
-                        obj[1] = handler;
+                        obj[1] = handlerKb;
 
-                        handler.BeginReceive(buffernew, 0, buffernew.Length,
+                        handlerKb.BeginReceive(buffernew, 0, buffernew.Length,
                             SocketFlags.None,
                             new AsyncCallback(ReceiveCallbackKB), obj);
                     }
@@ -434,13 +431,13 @@ namespace RemoteControllerServer
                 byte[] buffer = (byte[])obj[0];
 
                 // A Socket to handle remote host communication. 
-                handler = (Socket)obj[1];
+                handlerM = (Socket)obj[1];
 
                 // Received message 
                 string content = string.Empty;
 
                 // The number of bytes received. 
-                int bytesRead = handler.EndReceiveFrom(ar, ref RemoteEndpoint);
+                int bytesRead = handlerM.EndReceiveFrom(ar, ref RemoteEndpoint);
 
                 if (bytesRead > 0)
                 {
@@ -460,9 +457,9 @@ namespace RemoteControllerServer
                         // Continues to asynchronously receive data
                         byte[] buffernew = new byte[1024];
                         obj[0] = buffernew;
-                        obj[1] = handler;
+                        obj[1] = handlerM;
 
-                        handler.BeginReceiveFrom(
+                        handlerM.BeginReceiveFrom(
                             buffernew, 0, 
                             buffernew.Length,
                             SocketFlags.None,
