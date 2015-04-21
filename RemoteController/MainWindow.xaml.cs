@@ -25,8 +25,6 @@ namespace RemoteController
         Socket senderSock, senderSock_Keyboard, senderSock_mouse;
         String workingServerIp = "";
         int workingPort = 0;
-        int flag = 0;
-        int flag_start = 0;
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
@@ -43,16 +41,16 @@ namespace RemoteController
         {
             SocketTCP_Connection();
 
-            string theMessageToSend = workingPassword + "<Client Quit>";
-            byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
+            //string theMessageToSend = workingPassword + "<Client Quit>";
+            //byte[] msg = Encoding.Unicode.GetBytes(theMessageToSend);
 
             // Sends data to a connected Socket. 
-            int bytesSend = senderSock.Send(msg);
-            flag_start = ReceiveDataFromServer();
+            //int bytesSend = senderSock.Send(msg);
+            //int flag_start = ReceiveDataFromServer();
 
             // se pass ok vai attiva tutto il resto
-            if (flag_start == 1)
-            {
+            //if (flag_start == 1)
+            //{
                 SocketTCP_Keyboard();
                 SocketUPD_Mouse();
 
@@ -61,15 +59,15 @@ namespace RemoteController
                 tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
                 Connect_Button.IsEnabled = false;
                 Disconnect_Button.IsEnabled = true;
-            }
-            else 
-            {
+            //}
+            //else 
+            /*{
                 //Closes the Socket connection and releases all resources 
                 senderSock.Close();
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected...wrong password";
-            } 
+            //} */
         }
 
         private int ReceiveDataFromServer()
@@ -100,7 +98,8 @@ namespace RemoteController
                 NetworkAccess.Connect,    // Connection permission 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
-                SocketPermission.AllPorts // All ports 
+                p
+                //SocketPermission.AllPorts // All ports 
                 );
 
             // Ensures the code to have permission to access a Socket 
@@ -150,7 +149,6 @@ namespace RemoteController
                 SocketException e = new SocketException();
                 throw e;
             }
-            flag = 1;
         }
         
         private void SocketTCP_Keyboard() {
@@ -163,7 +161,8 @@ namespace RemoteController
                 NetworkAccess.Connect,    // Connection permission 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
-                SocketPermission.AllPorts // All ports 
+                p
+                //SocketPermission.AllPorts // All ports 
                 );
 
             // Ensures the code to have permission to access a Socket 
@@ -222,7 +221,8 @@ namespace RemoteController
                 NetworkAccess.Connect,    // Connection permission 
                 TransportType.Tcp,        // Defines transport types 
                 "",                       // Gets the IP addresses 
-                SocketPermission.AllPorts // All ports 
+                p
+                //SocketPermission.AllPorts // All ports 
                 );
 
             // Ensures the code to have permission to access a Socket 
@@ -480,6 +480,7 @@ namespace RemoteController
         private void Application_Exit(object sender, EventArgs e)
         {
             KListener.Dispose();
+            MListener.Dispose();
         }
 
         private void SendKey(string pressType, int VKCode)
@@ -490,7 +491,7 @@ namespace RemoteController
                 {
                     string kbEvent = pressType + "+" + VKCode;
                     byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                    int bytesSend = senderSock.Send(ReadyKbEvent);
+                    int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
                 }
             }          
         }

@@ -14,9 +14,8 @@ namespace RemoteControllerServer
 
         Socket sListener, sListenerKb, sListenerM;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
-        Socket handler;
+        Socket handler, handlerKb, handlerM;
         String pass = "1234";
-        int flag_start = 0;
         int port_conn = 4510, port_kb = 4520, port_m = 4530;
 
         private TextBox tbAux = new TextBox();
@@ -176,9 +175,9 @@ namespace RemoteControllerServer
             try
             {
                 // Length of the pending connections queue 
-                sListener.Listen(10);
-                sListenerKb.Listen(10);
-                sListenerM.Listen(10);
+                sListener.Listen(1);
+                sListenerKb.Listen(1);
+                sListenerM.Listen(1);
                 // Begins an asynchronous operation to accept an attempt 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 // Connection
@@ -217,7 +216,8 @@ namespace RemoteControllerServer
                 object[] obj = new object[2];
                 obj[0] = buffer;
                 obj[1] = handler;
-                if (endpoint.ToString().CompareTo(sListener.LocalEndPoint.ToString()) == 0)
+                //if (endpoint.ToString().CompareTo(sListener.LocalEndPoint.ToString()) == 0)
+                if (endpoint.GetHashCode() == sListener.LocalEndPoint.GetHashCode())
                 {
                     handler.BeginReceive(
                          buffer,        // An array of type Byt for received data 
@@ -228,7 +228,8 @@ namespace RemoteControllerServer
                          obj            // Specifies infomation for receive operation 
                          );
                 }
-                else if (endpoint.ToString().CompareTo(sListenerKb.LocalEndPoint.ToString()) == 0)
+                //if (endpoint.ToString().CompareTo(sListenerKb.LocalEndPoint.ToString()) == 0)
+                if (endpoint.GetHashCode() == sListenerKb.LocalEndPoint.GetHashCode())
                 {
                     handler.BeginReceive(
                          buffer,        // An array of type Byt for received data 
@@ -239,7 +240,8 @@ namespace RemoteControllerServer
                          obj            // Specifies infomation for receive operation 
                          );
                 }
-                else 
+                //if (endpoint.ToString().CompareTo(sListenerM.LocalEndPoint.ToString()) == 0)
+                if (endpoint.GetHashCode() == sListenerM.LocalEndPoint.GetHashCode())
                 {
                     handler.BeginReceive(
                         buffer,        // An array of type Byt for received data 
@@ -248,7 +250,7 @@ namespace RemoteControllerServer
                         SocketFlags.None,// Specifies send and receive behaviors 
                         new AsyncCallback(ReceiveCallbackMouse),//An AsyncCallback delegate 
                         obj            // Specifies infomation for receive operation 
-                        );   
+                        );
                 }
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
 
@@ -282,14 +284,12 @@ namespace RemoteControllerServer
                     content += Encoding.Unicode.GetString(buffer, 0,
                         bytesRead);
 
-                    //Parse_KB_Event(content);
-
                     // If message contains "<Client Quit>", finish receiving
                     if (content.IndexOf("<Client Quit>") > -1)
                     {
                         // Convert byte array to string
                         string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
-                        Verifica_Password(str);
+                        //Verifica_Password(str);
                     }
                     else
                     {
@@ -319,13 +319,13 @@ namespace RemoteControllerServer
                 byte[] buffer = (byte[])obj[0];
 
                 // A Socket to handle remote host communication. 
-                handler = (Socket)obj[1];
+                handlerKb = (Socket)obj[1];
 
                 // Received message 
                 string content = string.Empty;
 
                 // The number of bytes received. 
-                int bytesRead = handler.EndReceive(ar);
+                int bytesRead = handlerKb.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
@@ -339,16 +339,15 @@ namespace RemoteControllerServer
                     {
                         // Convert byte array to string
                         string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
-                        Verifica_Password(str);
                     }
                     else
                     {
                         // Continues to asynchronously receive data
                         byte[] buffernew = new byte[1024];
                         obj[0] = buffernew;
-                        obj[1] = handler;
+                        obj[1] = handlerKb;
 
-                        handler.BeginReceive(buffernew, 0, buffernew.Length,
+                        handlerKb.BeginReceive(buffernew, 0, buffernew.Length,
                             SocketFlags.None,
                             new AsyncCallback(ReceiveCallbackKB), obj);
                     }
@@ -369,13 +368,13 @@ namespace RemoteControllerServer
                 byte[] buffer = (byte[])obj[0];
 
                 // A Socket to handle remote host communication. 
-                handler = (Socket)obj[1];
+                handlerM = (Socket)obj[1];
 
                 // Received message 
                 string content = string.Empty;
 
                 // The number of bytes received. 
-                int bytesRead = handler.EndReceive(ar);
+                int bytesRead = handlerM.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
@@ -389,16 +388,15 @@ namespace RemoteControllerServer
                     {
                         // Convert byte array to string
                         string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
-                        Verifica_Password(str);
                     }
                     else
                     {
                         // Continues to asynchronously receive data
                         byte[] buffernew = new byte[1024];
                         obj[0] = buffernew;
-                        obj[1] = handler;
+                        obj[1] = handlerM;
 
-                        handler.BeginReceive(buffernew, 0, buffernew.Length,
+                        handlerM.BeginReceive(buffernew, 0, buffernew.Length,
                             SocketFlags.None,
                             new AsyncCallback(ReceiveCallbackMouse), obj);
                     }
@@ -481,7 +479,7 @@ namespace RemoteControllerServer
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbKeyboardStatus.Text = "received -> " + kbEvent;
+                tbKeyboardStatus.Text = "received:" + kbEvent;
             }));
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
