@@ -104,8 +104,8 @@ namespace Utils.Mouse
 
         public RawMouseEventArgs(int x, int y, int data, uint flags)
         {
-            this.x = x;
-            this.y = y;
+            this.x = InterceptMouse.CalculateAbsoluteCoordinateX(x);
+            this.y = InterceptMouse.CalculateAbsoluteCoordinateY(y);
             this.data = data;
             this.flags = flags;
         }
@@ -155,6 +155,22 @@ namespace Utils.Mouse
             }
         }
 
+        public static int CalculateAbsoluteCoordinateX(int x)
+        {
+            return (x * 65536) / GetSystemMetrics(SystemMetric.SM_CXSCREEN);
+        }
+
+        public static int CalculateAbsoluteCoordinateY(int y)
+        {
+            return (y * 65536) / GetSystemMetrics(SystemMetric.SM_CYSCREEN);
+        }
+
+        enum SystemMetric
+        {
+            SM_CXSCREEN = 0,
+            SM_CYSCREEN = 1,
+        }
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
 
@@ -167,6 +183,9 @@ namespace Utils.Mouse
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("user32.dll")]
+        static extern int GetSystemMetrics(SystemMetric smIndex);
 
     }
 }

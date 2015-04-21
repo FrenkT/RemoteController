@@ -20,15 +20,6 @@ namespace Utils.InputGenerator
         [DllImport("user32.dll")]
         public static extern IntPtr GetMessageExtraInfo();
 
-        [DllImport("user32.dll")]
-        static extern int GetSystemMetrics(SystemMetric smIndex);
-
-        enum SystemMetric
-        {
-            SM_CXSCREEN = 0,
-            SM_CYSCREEN = 1,
-        }
-
         public struct INPUT
         {
             public int type;
@@ -97,16 +88,6 @@ namespace Utils.InputGenerator
         public const uint MOUSEEVENTF_VIRTUALDESK = 0x4000;
         public const int MOUSEEVENTF_ABSOLUTE = 0x8000;
 
-        public static int CalculateAbsoluteCoordinateX(int x)
-        {
-            return (x * 65536) / GetSystemMetrics(SystemMetric.SM_CXSCREEN);
-        }
-
-        public static int CalculateAbsoluteCoordinateY(int y)
-        {
-            return (y * 65536) / GetSystemMetrics(SystemMetric.SM_CYSCREEN);
-        }
-
         public static void SendKeyDown(string k)
         {
             ushort c;
@@ -172,8 +153,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP,
                         dwExtraInfo = IntPtr.Zero, 
@@ -194,8 +175,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN,
                         dwExtraInfo = IntPtr.Zero,
@@ -216,8 +197,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE,
                         dwExtraInfo = IntPtr.Zero,

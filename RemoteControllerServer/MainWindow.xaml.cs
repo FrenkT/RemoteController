@@ -496,7 +496,8 @@ namespace RemoteControllerServer
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbMouseStatus.Text = "mouse received -> " + mouseEvent;
+                tbMouseStatus.Text = "";
+                tbMouseStatus.Text = "mouse received: " + mouseEvent;
             }));
             string[] words = mouseEvent.Split('+');
             if (words[0] == "LEFTDOWN")
