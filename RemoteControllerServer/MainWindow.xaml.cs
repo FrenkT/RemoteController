@@ -365,6 +365,22 @@ namespace RemoteControllerServer
             {
                 InputGenerator.SendMove(int.Parse(words[1]), int.Parse(words[2]));
             }
+            if (words[0] == "RIGHTUP")
+            {
+                InputGenerator.SendRightUp(int.Parse(words[1]), int.Parse(words[2]));
+            }
+            if (words[0] == "RIGHTDOWN")
+            {
+                InputGenerator.SendRightDown(int.Parse(words[1]), int.Parse(words[2]));
+            }
+            if (words[0] == "WHEEL")
+            {
+                InputGenerator.SendWheel(int.Parse(words[1]), int.Parse(words[2]), int.Parse(words[3]));
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    tbMouseStatus.Text = "mouse received -> " + mouseEvent + " data -> " + words[3];
+                }));
+            }
         }
     }
 }
