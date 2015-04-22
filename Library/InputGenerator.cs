@@ -140,8 +140,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP,
                         dwExtraInfo = IntPtr.Zero, 
@@ -162,8 +162,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN,
                         dwExtraInfo = IntPtr.Zero,
@@ -184,8 +184,8 @@ namespace Utils.InputGenerator
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx = CalculateAbsoluteCoordinateX(x),
-                        dy = CalculateAbsoluteCoordinateY(y),
+                        dx = x,
+                        dy = y,
                         mouseData = 0,
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE,
                         dwExtraInfo = IntPtr.Zero,
