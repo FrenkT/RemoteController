@@ -46,7 +46,7 @@ namespace RemoteController
 
             if (ReceivePasswordCheck())
             {
-                Create_SocketTCP(workingPort+10);
+                Create_SocketTCP_Keyboard(workingPort+10);
                 Create_SocketUDP(workingPort+20);
 
                 tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
@@ -103,6 +103,51 @@ namespace RemoteController
             try
             {
                 senderSock.Connect(ipEndPoint);
+            }
+            catch (ArgumentNullException)
+            {
+                //address is null.
+                ArgumentNullException e = new ArgumentNullException();
+                throw e;
+            }
+            catch (ArgumentException)
+            {
+                // The length of address is zero.
+                ArgumentException e = new ArgumentException();
+                throw e;
+            }
+            catch (SocketException)
+            {
+                // An error occurred when attempting to access the socket.
+                SocketException e = new SocketException();
+                throw e;
+            }
+        }
+
+        private void Create_SocketTCP_Keyboard(int p)
+        {
+
+            IPEndPoint ipEndPoint = null;
+            SocketPermission permission = new SocketPermission(NetworkAccess.Connect, TransportType.Tcp, "", SocketPermission.AllPorts);
+
+            permission.Demand();
+
+            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
+
+            try
+            {
+                ipEndPoint = new IPEndPoint(ipAddr, p);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new ArgumentNullException();
+            }
+
+            senderSock_Keyboard = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            senderSock_Keyboard.NoDelay = true;
+            try
+            {
+                senderSock_Keyboard.Connect(ipEndPoint);
             }
             catch (ArgumentNullException)
             {
