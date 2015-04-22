@@ -18,7 +18,6 @@ namespace RemoteControllerServer
         String pass = "1234";
         String locIp = GetIP4Address();
         int port_conn = 4510;
-        int flag_connection = 0;
         private TextBox tbAux = new TextBox();
 
         public MainWindow()
@@ -34,6 +33,9 @@ namespace RemoteControllerServer
             Create_TCPConnection();
             Create_TCPConnection_Keyboard();
             Create_UDPConnection_Mouse();
+
+            Start_Button.IsEnabled = false;
+            StartListen_Button.IsEnabled = true;
         }
 
         public static string GetIP4Address()
@@ -68,9 +70,6 @@ namespace RemoteControllerServer
                 sListener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 sListener.Bind(ipEndPoint);
-
-                Start_Button.IsEnabled = false;
-                StartListen_Button.IsEnabled = true;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }    
         }
@@ -92,9 +91,6 @@ namespace RemoteControllerServer
                 sListenerKb = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 sListenerKb.Bind(ipEndPointKb);
-                
-                Start_Button.IsEnabled = false;
-                StartListen_Button.IsEnabled = true;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -116,9 +112,6 @@ namespace RemoteControllerServer
                 sListenerM = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 
                 sListenerM.Bind(ipEndPointM);
-
-                Start_Button.IsEnabled = false;
-                StartListen_Button.IsEnabled = true;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -128,25 +121,16 @@ namespace RemoteControllerServer
             try
             {
                 sListener.Listen(1);
-                sListenerKb.Listen(1);
-                
+
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 sListener.BeginAccept(aCallback, sListener);
-                
-                // KB
-                AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
-                sListenerKb.BeginAccept(aCallback2, sListenerKb);
-                
-                // Mouse
-                ReceiveMouse();
-
-                tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 StartListen_Button.IsEnabled = false;
+                tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        public void ReceiveMouse()
+        public void StartListenMouse()
         {
             byte[] buffer = new byte[1024];
             Socket handler = sListenerM;
@@ -208,10 +192,21 @@ namespace RemoteControllerServer
                 {
                     content += Encoding.Unicode.GetString(buffer, 0, bytesRead);
 
-                    if (content.IndexOf("<Client Quit>") > -1)
+                    if (content.IndexOf("<PasswordCheck>") > -1)
                     {
-                        string str = content.Substring(0, content.LastIndexOf("<Client Quit>"));
-                        Verifica_Password(str);
+                        string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
+                        if (Check_Password(str))
+                        {
+                            sListenerKb.Listen(1);
+                            AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
+                            sListenerKb.BeginAccept(aCallback2, sListenerKb);
+                            StartListenMouse();
+                            this.Dispatcher.Invoke((Action)(() =>
+                            { tbConnectionStatus.Text = "Connection accepted.";
+                              tbKeyboardStatus.Text = "Connection Keyboard accepted.";
+                              tbMouseStatus.Text = "Connection Mouse accepted.";
+                            }));
+                        }
                     }
                     else
                     {
@@ -287,57 +282,34 @@ namespace RemoteControllerServer
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }        
 
-        public void Verifica_Password(String inputpassword) {
+        public bool Check_Password(String inputpassword) {
             try
             {
                 if (pass.CompareTo(inputpassword) == 0)
                 {
-                    // Convert byte array to string 
                     string str = "ok";
-                    flag_connection = 1;
-                    // Prepare the reply message 
-                    byte[] byteData =
-                        Encoding.Unicode.GetBytes(str);
+                    byte[] byteData = Encoding.Unicode.GetBytes(str);
                 
-                    // Sends data asynchronously to a connected Socket 
-                    handler.BeginSend(byteData, 0, byteData.Length, 0,
-                        new AsyncCallback(SendCallback), handler);
+                    handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
+                    return true;
                 }
                 else {
-                    // Convert byte array to string 
                     string str = "quit";
-
-                    // Prepare the reply message 
-                    byte[] byteData =
-                        Encoding.Unicode.GetBytes(str);
-
-                    // Sends data asynchronously to a connected Socket 
-                    handler.BeginSend(byteData, 0, byteData.Length, 0,
-                        new AsyncCallback(SendCallback), handler);
+                    byte[] byteData = Encoding.Unicode.GetBytes(str);
+                    handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
                 }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            
+            return false;
         }
         
         public void SendCallback(IAsyncResult ar)
         {
             try
             {
-                // A Socket which has sent the data to remote host 
                 Socket handler = (Socket)ar.AsyncState;
-
-                // The number of bytes sent to the Socket 
                 int bytesSend = handler.EndSend(ar);
-                if (flag_connection == 1)
-                {
-                    this.Dispatcher.Invoke((Action)(() =>
-                    {
-
-                        tbConnectionStatus.Text = "Connection accepted.";
-                        tbKeyboardStatus.Text = "Connection Keyboard accepted.";
-                        tbMouseStatus.Text = "Connection Mouse accepted.";
-                    }));
-                }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
