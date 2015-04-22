@@ -90,44 +90,54 @@ namespace Utils.InputGenerator
 
         public static void SendKeyDown(string k)
         {
-            INPUT input = new INPUT
+            ushort wVk;
+            bool parsed = UInt16.TryParse(k, out wVk);
+            if (parsed)
             {
-                type = INPUT_KEYBOARD,
-                u = new InputUnion
+                INPUT input = new INPUT
                 {
-                    ki = new KEYBDINPUT
+                    type = INPUT_KEYBOARD,
+                    u = new InputUnion
                     {
-                        wVk = UInt16.Parse(k),
-                        wScan = 0,
-                        dwFlags = 0,
-                        dwExtraInfo = IntPtr.Zero,
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = wVk,
+                            wScan = 0,
+                            dwFlags = 0,
+                            dwExtraInfo = IntPtr.Zero,
+                        }
                     }
-                }
-            };
+                };
 
-            INPUT[] inputs = new INPUT[] { input };
-            SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+                INPUT[] inputs = new INPUT[] { input };
+                SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+            }
         }
 
         public static void SendKeyUP(string k)
         {
-            INPUT input = new INPUT
+            ushort wVk;
+            bool parsed = UInt16.TryParse(k, out wVk);
+            if (parsed)
             {
-                type = INPUT_KEYBOARD,
-                u = new InputUnion
+                INPUT input = new INPUT
                 {
-                    ki = new KEYBDINPUT
+                    type = INPUT_KEYBOARD,
+                    u = new InputUnion
                     {
-                        wVk = UInt16.Parse(k),
-                        wScan = 0,
-                        dwFlags = 2,
-                        dwExtraInfo = IntPtr.Zero,
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = wVk,
+                            wScan = 0,
+                            dwFlags = 2,
+                            dwExtraInfo = IntPtr.Zero,
+                        }
                     }
-                }
-            };
+                };
 
-            INPUT[] inputs = new INPUT[] { input };
-            SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+                INPUT[] inputs = new INPUT[] { input };
+                SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
+            }
 
         }
 
