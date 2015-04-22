@@ -9,6 +9,12 @@ using Utils.InputGenerator;
 
 namespace RemoteControllerServer
 {
+    public class UdpState
+    {
+        public IPEndPoint e { get; set; }
+        public UdpClient u { get; set; }
+    }
+
     public partial class MainWindow : Window
     {
 
@@ -173,6 +179,7 @@ namespace RemoteControllerServer
         
         private void Listen_Click(object sender, RoutedEventArgs e)
         {
+
             try
             {
                 // Length of the pending connections queue 
@@ -197,8 +204,14 @@ namespace RemoteControllerServer
                  If you are using a connectionless protocol such as UDP, you can use BeginSendTo and EndSendTo to 
                  send datagrams, and BeginReceiveFrom and EndReceiveFrom to receive datagrams.
                  */
-                AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback3);
-                sListenerM.BeginAccept(aCallback3, sListenerM);
+                //AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback3);
+                //sListenerM.BeginAccept(aCallback3, sListenerM);
+
+                UdpClient u = new UdpClient(ipEndPoint);
+                UdpState s = new UdpState();
+                s.e = ipEndPoint;
+                s.u = u;
+                u.BeginReceive(new AsyncCallback(ReceiveCallbackMouse), s);
 
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 StartListen_Button.IsEnabled = false;
@@ -247,6 +260,7 @@ namespace RemoteControllerServer
         {
             Socket listener = null;
             Socket handler = null;
+
             try
             {
                 // Receiving byte array 
@@ -372,7 +386,13 @@ namespace RemoteControllerServer
 
         public void ReceiveCallbackKB(IAsyncResult ar)
         {
-            try
+            UdpClient u = (UdpClient)((UdpState)(ar.AsyncState)).u;
+            IPEndPoint e = (IPEndPoint)((UdpState)(ar.AsyncState)).e;
+
+            byte[] buffer = u.EndReceive(ar, ref e);
+
+            u.BeginReceive(new AsyncCallback(ReceiveCallbackMouse), ar);
+            /*try
             {
                 // Fetch a user-defined object that contains information 
                 object[] obj = new object[2];
@@ -410,13 +430,16 @@ namespace RemoteControllerServer
                         obj[0] = buffernew;
                         obj[1] = handlerKb;
 
-                        handlerKb.BeginReceive(buffernew, 0, buffernew.Length,
+                        handlerKb.BeginReceive(
+                            buffernew, 
+                            0, 
+                            buffernew.Length,
                             SocketFlags.None,
                             new AsyncCallback(ReceiveCallbackKB), obj);
                     }
                 }
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }*/
         }
         
         public void ReceiveCallbackMouse(IAsyncResult ar)
@@ -437,7 +460,7 @@ namespace RemoteControllerServer
                 string content = string.Empty;
 
                 // The number of bytes received. 
-                int bytesRead = handlerM.EndReceiveFrom(ar, ref RemoteEndpoint);
+                int bytesRead = handlerM.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
@@ -458,12 +481,10 @@ namespace RemoteControllerServer
                         byte[] buffernew = new byte[1024];
                         obj[0] = buffernew;
                         obj[1] = handlerM;
-
-                        handlerM.BeginReceiveFrom(
+                        handlerM.BeginReceive(
                             buffernew, 0, 
                             buffernew.Length,
                             SocketFlags.None,
-                            ref RemoteEndpoint,
                             new AsyncCallback(ReceiveCallbackMouse), 
                             obj);
                     }
