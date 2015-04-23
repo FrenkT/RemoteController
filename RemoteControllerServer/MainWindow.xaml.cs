@@ -15,9 +15,9 @@ namespace RemoteControllerServer
         Socket sListener, sListenerKb, sListenerM;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         Socket handler, handlerKb, handlerM;
-        String pass = "1234";
+        String pass = "";
         String locIp = GetIP4Address();
-        int port_conn = 4510;
+        int port_conn;
         private TextBox tbAux = new TextBox();
 
         public MainWindow()
@@ -30,12 +30,23 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            Create_TCPConnection();
-            Create_TCPConnection_Keyboard();
-            Create_UDPConnection_Mouse();
-
-            Start_Button.IsEnabled = false;
-            StartListen_Button.IsEnabled = true;
+            
+            pass = TextBox_ConfigPassword.Password;
+            port_conn = int.Parse(TextBox_ConfigPort.Text);
+            if (!string.IsNullOrWhiteSpace(pass))
+            {
+                
+                Create_TCPConnection();
+                Create_TCPConnection_Keyboard();
+                Create_UDPConnection_Mouse();
+                Start_Button.IsEnabled = false;
+                StartListen_Button.IsEnabled = true;
+            }
+            else
+            {
+                MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            
         }
 
         public static string GetIP4Address()
@@ -58,7 +69,7 @@ namespace RemoteControllerServer
             try
             {
                 SocketPermission permission = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
-
+                
                 sListener = null;
 
                 permission.Demand();
