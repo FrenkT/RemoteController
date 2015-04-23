@@ -52,6 +52,14 @@ namespace Utils.Mouse
                     hookedMouseCallbackAsync.BeginInvoke((InterceptMouse.MouseMessages)wParam.ToUInt32(), (InterceptMouse.MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(InterceptMouse.MSLLHOOKSTRUCT)), null, null);
                 }
             }
+            if (wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_LBUTTONDOWN ||
+                wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_LBUTTONUP ||
+                wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_MOUSEWHEEL ||
+                wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_RBUTTONDOWN ||
+                wParam.ToUInt32() == (int)InterceptMouse.MouseMessages.WM_RBUTTONUP)
+            {
+                return new IntPtr(1);
+            }
             return InterceptMouse.CallNextHookEx(hookId, nCode, wParam, lParam);
         }
 

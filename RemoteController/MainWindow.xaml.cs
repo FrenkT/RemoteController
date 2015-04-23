@@ -26,8 +26,8 @@ namespace RemoteController
         String workingPassword = "";
         String workingSelection = "";
         List<Server> serverList = new List<Server>();
-        KeyboardListener KListener = new KeyboardListener();
-        MouseListener MListener = new MouseListener();
+        KeyboardListener KListener;
+        MouseListener MListener;
 
         public MainWindow()
         {
@@ -54,6 +54,16 @@ namespace RemoteController
                 tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
                 Connect_Button.IsEnabled = false;
                 Disconnect_Button.IsEnabled = true;
+                KListener = new KeyboardListener();
+                MListener = new MouseListener();
+                KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+                KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
+                MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
+                MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
+                MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
+                MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
+                MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
+                MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
             }
             else 
             {
@@ -224,6 +234,9 @@ namespace RemoteController
                 tbConnectionStatus.Text = "Not connected";
                 tbKeyboardConnection.Text = "Not connected";
                 tbMouseConnection.Text = "Not connected";
+
+                KListener.Dispose();
+                MListener.Dispose();
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -332,14 +345,14 @@ namespace RemoteController
 
         private void Application_Startup(object sender, RoutedEventArgs e)
         {
-            KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+            /*KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
             KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
             MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
             MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
             MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
             MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
             MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
-            MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+            MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);*/
         }
 
         void MListener_LeftDown(object sender, RawMouseEventArgs args)
@@ -424,7 +437,8 @@ namespace RemoteController
 
         private void Application_Exit(object sender, EventArgs e)
         {
-            KListener.Dispose();
+            //KListener.Dispose();
+            //MListener.Dispose();
         }
 
         private void SendKey(string pressType, int VKCode)
