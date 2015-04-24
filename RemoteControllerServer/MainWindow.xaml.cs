@@ -132,7 +132,6 @@ namespace RemoteControllerServer
             try
             {
                 sListener.Listen(1);
-
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 sListener.BeginAccept(aCallback, sListener);
                 StartListen_Button.IsEnabled = false;

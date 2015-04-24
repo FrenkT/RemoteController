@@ -21,6 +21,7 @@ namespace RemoteController
     public partial class MainWindow : Window
     {
         Socket senderSock, senderSock_Keyboard, senderSock_mouse;
+        Socket handler;
         String workingServerIp = "";
         int workingPort = 0;
         String workingPassword = "";
@@ -48,6 +49,10 @@ namespace RemoteController
             {
                 Create_SocketTCP_Keyboard(workingPort+10);
                 Create_SocketUDP(workingPort+20);
+                //senderSock.Listen(1);
+                //AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
+                //senderSock.BeginAccept(aCallback, senderSock);
+                Accept();
 
                 tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
                 tbKeyboardConnection.Text = "Client connected to " + senderSock_Keyboard.RemoteEndPoint.ToString();
@@ -88,6 +93,75 @@ namespace RemoteController
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             return accepted;
+        }
+
+        public void Accept()
+        {
+            Socket listener = null;
+            try
+            {
+                byte[] buffer = new byte[1024];
+
+                listener = senderSock;
+
+                object[] obj = new object[2];
+                obj[0] = buffer;
+                obj[1] = listener;
+                listener.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), obj);
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+        }
+
+        public void ReceiveCallbackControl(IAsyncResult ar)
+        {
+            try
+            {
+                object[] obj = new object[2];
+                obj = (object[])ar.AsyncState;
+
+                byte[] buffer = (byte[])obj[0];
+
+                handler = (Socket)obj[1];
+
+                string content = string.Empty;
+
+                int bytesRead = handler.EndReceive(ar);
+
+                if (bytesRead > 0)
+                {
+                    content += Encoding.Unicode.GetString(buffer, 0, bytesRead);
+
+                    if (content.IndexOf("Disconnect") > -1)
+                    {
+                        try
+                        {
+                            senderSock.Close();
+                            senderSock_Keyboard.Close();
+                            senderSock_mouse.Close();
+                            this.Dispatcher.Invoke((Action)(() =>
+                            {
+                                Disconnect_Button.IsEnabled = false;
+                                Connect_Button.IsEnabled = true;
+                                tbConnectionStatus.Text = "Not connected";
+                                tbKeyboardConnection.Text = "Not connected";
+                                tbMouseConnection.Text = "Not connected";
+                            }));
+                            KListener.Dispose();
+                            MListener.Dispose();
+                        }
+                        catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+                    }
+                    else
+                    {
+                        byte[] buffernew = new byte[1024];
+                        obj[0] = buffernew;
+                        obj[1] = handler;
+
+                        handler.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), obj);
+                    }
+                }
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
         private void Create_SocketTCP(int p){
