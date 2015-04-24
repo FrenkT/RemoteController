@@ -18,10 +18,18 @@ namespace RemoteController
         public String port { get; set; }
     }
 
+    public class StateObject
+    {
+        public Socket workSocket = null;
+        public const int BufferSize = 1024;
+        public byte[] buffer = new byte[BufferSize];
+        public StringBuilder sb = new StringBuilder();
+    }
+
     public partial class MainWindow : Window
     {
-        Socket senderSock, senderSock_Keyboard, senderSock_mouse;
-        Socket handler;
+        Socket controlSocket, keyboardSocket, mouseSocket;
+        //Socket handler;
         String workingServerIp = "";
         int workingPort = 0;
         String workingPassword = "";
@@ -38,25 +46,25 @@ namespace RemoteController
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
-            Create_SocketTCP(workingPort);
+            InitControlSocket(workingPort);
 
             string passwordMessage = workingPassword + "<PasswordCheck>";
-            byte[] msg = Encoding.Unicode.GetBytes(passwordMessage);
-
-            int bytesSend = senderSock.Send(msg);
+            byte[] passwordToByte = Encoding.Unicode.GetBytes(passwordMessage);
+            int bytesSend = controlSocket.Send(passwordToByte);
 
             if (ReceivePasswordCheck())
             {
-                Create_SocketTCP_Keyboard(workingPort+10);
-                Create_SocketUDP(workingPort+20);
-                //senderSock.Listen(1);
-                //AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                //senderSock.BeginAccept(aCallback, senderSock);
-                Accept();
+                InitKeyboardSocket(workingPort+10);
+                InitMouseSocket(workingPort+20);
 
-                tbConnectionStatus.Text = "Client connected to " + senderSock.RemoteEndPoint.ToString();
-                tbKeyboardConnection.Text = "Client connected to " + senderSock_Keyboard.RemoteEndPoint.ToString();
-                tbMouseConnection.Text = "Client connected to " + senderSock_mouse.RemoteEndPoint.ToString();
+                //controlSocket.Listen(1);
+                //AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
+                //controlSocket.BeginAccept(aCallback, controlSocket);
+                ListenFromServer();
+
+                tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
+                tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
+                tbMouseConnection.Text = "Client connected to " + mouseSocket.RemoteEndPoint.ToString();
                 Connect_Button.IsEnabled = false;
                 Disconnect_Button.IsEnabled = true;
                 KListener = new KeyboardListener();
@@ -72,7 +80,7 @@ namespace RemoteController
             }
             else 
             {
-                senderSock.Close();
+                controlSocket.Close();
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 MessageBox.Show("Wrong Password");
@@ -81,18 +89,30 @@ namespace RemoteController
 
         private bool ReceivePasswordCheck()
         {
-            byte[] bytes = new byte[1024];
             bool accepted = false;
+            byte[] bytes = new byte[1024];
             try
             {
-                int bytesRec = senderSock.Receive(bytes);
-                String theMessageToReceive = Encoding.Unicode.GetString(bytes, 0, bytesRec);
-                if (theMessageToReceive.CompareTo("ok") == 0) {
+                int bytesReceived = controlSocket.Receive(bytes);
+                String passwordCheck = Encoding.Unicode.GetString(bytes, 0, bytesReceived);
+                if (passwordCheck.CompareTo("ok") == 0) {
                     accepted = true;
                 }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             return accepted;
+        }
+
+        private void ListenFromServer()
+        {
+            try
+            {
+                StateObject state = new StateObject();
+                state.workSocket = controlSocket;
+
+                controlSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveControlCallback), state);
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
         public void Accept()
@@ -102,42 +122,37 @@ namespace RemoteController
             {
                 byte[] buffer = new byte[1024];
 
-                listener = senderSock;
+                listener = controlSocket;
 
                 object[] obj = new object[2];
                 obj[0] = buffer;
                 obj[1] = listener;
-                listener.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), obj);
+                listener.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveControlCallback), obj);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        public void ReceiveCallbackControl(IAsyncResult ar)
+        public void ReceiveControlCallback(IAsyncResult ar)
         {
             try
             {
-                object[] obj = new object[2];
-                obj = (object[])ar.AsyncState;
-
-                byte[] buffer = (byte[])obj[0];
-
-                handler = (Socket)obj[1];
+                StateObject state = (StateObject)ar.AsyncState;
+                Socket controlSocket = state.workSocket;
 
                 string content = string.Empty;
-
-                int bytesRead = handler.EndReceive(ar);
+                int bytesRead = controlSocket.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
-                    content += Encoding.Unicode.GetString(buffer, 0, bytesRead);
+                    content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
 
                     if (content.IndexOf("Disconnect") > -1)
                     {
                         try
-                        {
-                            senderSock.Close();
-                            senderSock_Keyboard.Close();
-                            senderSock_mouse.Close();
+                        {   // TODO check socket closing
+                            controlSocket.Close();
+                            keyboardSocket.Close();
+                            mouseSocket.Close();
                             this.Dispatcher.Invoke((Action)(() =>
                             {
                                 Disconnect_Button.IsEnabled = false;
@@ -153,26 +168,20 @@ namespace RemoteController
                     }
                     else
                     {
-                        byte[] buffernew = new byte[1024];
-                        obj[0] = buffernew;
-                        obj[1] = handler;
-
-                        handler.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), obj);
+                        controlSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveControlCallback), state);
                     }
                 }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        private void Create_SocketTCP(int p){
+        private void InitControlSocket(int p){
 
             IPEndPoint ipEndPoint = null;
             SocketPermission permission = new SocketPermission(NetworkAccess.Connect, TransportType.Tcp, "", SocketPermission.AllPorts);
-
             permission.Demand();
 
             IPAddress ipAddr = IPAddress.Parse(workingServerIp);
-
             try
             {
                 ipEndPoint = new IPEndPoint(ipAddr, p);
@@ -182,11 +191,11 @@ namespace RemoteController
                 throw new ArgumentNullException();
             }
 
-            senderSock = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            senderSock.NoDelay = true;
+            controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            controlSocket.NoDelay = true;
             try
             {
-                senderSock.Connect(ipEndPoint);
+                controlSocket.Connect(ipEndPoint);
             }
             catch (ArgumentNullException)
             {
@@ -208,16 +217,14 @@ namespace RemoteController
             }
         }
 
-        private void Create_SocketTCP_Keyboard(int p)
+        private void InitKeyboardSocket(int p)
         {
 
             IPEndPoint ipEndPoint = null;
             SocketPermission permission = new SocketPermission(NetworkAccess.Connect, TransportType.Tcp, "", SocketPermission.AllPorts);
-
             permission.Demand();
 
             IPAddress ipAddr = IPAddress.Parse(workingServerIp);
-
             try
             {
                 ipEndPoint = new IPEndPoint(ipAddr, p);
@@ -227,11 +234,11 @@ namespace RemoteController
                 throw new ArgumentNullException();
             }
 
-            senderSock_Keyboard = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            senderSock_Keyboard.NoDelay = true;
+            keyboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            keyboardSocket.NoDelay = true;
             try
             {
-                senderSock_Keyboard.Connect(ipEndPoint);
+                keyboardSocket.Connect(ipEndPoint);
             }
             catch (ArgumentNullException)
             {
@@ -253,16 +260,14 @@ namespace RemoteController
             }
         }
 
-        private void Create_SocketUDP(int p) {
+        private void InitMouseSocket(int p) 
+        {
             
             IPEndPoint ipEndPoint = null;
-
             SocketPermission permission = new SocketPermission( NetworkAccess.Connect, TransportType.Udp, "", SocketPermission.AllPorts);
-
             permission.Demand();
 
             IPAddress ipAddr = IPAddress.Parse(workingServerIp);
-
             try
             {
                 ipEndPoint = new IPEndPoint(ipAddr, p);
@@ -272,11 +277,10 @@ namespace RemoteController
                 throw new ArgumentNullException();
             }
 
-            senderSock_mouse = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-
+            mouseSocket = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
             try
             {
-                senderSock_mouse.Connect(ipEndPoint);
+                mouseSocket.Connect(ipEndPoint);
             }
             catch (ArgumentNullException)
             {
@@ -299,9 +303,9 @@ namespace RemoteController
         {
             try
             {
-                senderSock.Close();
-                senderSock_Keyboard.Close();
-                senderSock_mouse.Close();
+                controlSocket.Close();
+                keyboardSocket.Close();
+                mouseSocket.Close();
                 
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
@@ -517,26 +521,26 @@ namespace RemoteController
 
         private void SendKey(string pressType, int VKCode)
         {
-            if (senderSock_Keyboard != null)
+            if (keyboardSocket != null)
             {
-                if (senderSock_Keyboard.Connected)
+                if (keyboardSocket.Connected)
                 {
                     string kbEvent = pressType + "+" + VKCode;
-                    byte[] ReadyKbEvent = Encoding.Unicode.GetBytes(kbEvent);
-                    int bytesSend = senderSock_Keyboard.Send(ReadyKbEvent);
+                    byte[] kbEventToByte = Encoding.Unicode.GetBytes(kbEvent);
+                    int bytesSend = keyboardSocket.Send(kbEventToByte);
                 }
             }          
         }
 
         private void SendMouse(string mouseEventType, int x, int y, int data)
         {
-            if (senderSock_mouse != null)
+            if (mouseSocket != null)
             {
-                if (senderSock_mouse.Connected)
+                if (mouseSocket.Connected)
                 {
                     string mouseEvent = mouseEventType + "+" + x + "+" + y + "+" + data;
-                    byte[] ReadyMouseEvent = Encoding.Unicode.GetBytes(mouseEvent);
-                    int bytesSend = senderSock_mouse.Send(ReadyMouseEvent);
+                    byte[] mouseEventToByte = Encoding.Unicode.GetBytes(mouseEvent);
+                    int bytesSend = mouseSocket.Send(mouseEventToByte);
                 } 
             }
         }
