@@ -17,7 +17,7 @@ namespace RemoteControllerServer
         Socket handler, handlerKb, handlerM;
         String pass = "";
         String locIp = GetIP4Address();
-        int port_conn;
+        int port_conn = 4510;
         private TextBox tbAux = new TextBox();
 
         public MainWindow()
@@ -30,12 +30,10 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            
-            pass = TextBox_ConfigPassword.Password;
-            port_conn = int.Parse(TextBox_ConfigPort.Text);
-            if (!string.IsNullOrWhiteSpace(pass))
+            if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
             {
-                
+                pass = TextBox_ConfigPassword.Password;
+                port_conn = int.Parse(TextBox_ConfigPort.Text);
                 Create_TCPConnection();
                 Create_TCPConnection_Keyboard();
                 Create_UDPConnection_Mouse();
@@ -134,10 +132,12 @@ namespace RemoteControllerServer
                 sListener.Listen(1);
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 sListener.BeginAccept(aCallback, sListener);
-                StartListen_Button.IsEnabled = false;
+                
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            StartListen_Button.IsEnabled = false;
+            Close_Button.IsEnabled = true;
         }
 
         public void StartListenMouse()
@@ -328,15 +328,19 @@ namespace RemoteControllerServer
         {
             try
             {
-                if (sListener.Connected)
-                {
-                    sListener.Shutdown(SocketShutdown.Receive);
-                    sListener.Close();
-                }
+                string str = "Disconnect";
+                byte[] byteData = Encoding.Unicode.GetBytes(str);
+                handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
 
-                Close_Button.IsEnabled = false;
+                sListener.Close();
+                sListenerKb.Close();
+                sListenerM.Close();
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            
+            Close_Button.IsEnabled = false;
+            Start_Button.IsEnabled = true;
+            StartListen_Button.IsEnabled = true;
         }
 
         private void Parse_KB_Event(string kbEvent)
