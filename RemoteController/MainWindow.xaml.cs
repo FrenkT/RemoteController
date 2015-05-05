@@ -29,7 +29,6 @@ namespace RemoteController
     public partial class MainWindow : Window
     {
         Socket controlSocket, keyboardSocket, mouseSocket;
-        //Socket handler;
         String workingServerIp = "";
         int workingPort = 0;
         String workingPassword = "";
@@ -57,9 +56,6 @@ namespace RemoteController
                 InitKeyboardSocket(workingPort+10);
                 InitMouseSocket(workingPort+20);
 
-                //controlSocket.Listen(1);
-                //AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                //controlSocket.BeginAccept(aCallback, controlSocket);
                 ListenFromServer();
 
                 tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
@@ -149,7 +145,7 @@ namespace RemoteController
                     if (content.IndexOf("Disconnect") > -1)
                     {
                         try
-                        {   // TODO check socket closing
+                        {   
                             controlSocket.Close();
                             keyboardSocket.Close();
                             mouseSocket.Close();
