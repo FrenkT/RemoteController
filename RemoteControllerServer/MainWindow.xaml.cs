@@ -89,6 +89,7 @@ namespace RemoteControllerServer
                 ipEndPoint = new IPEndPoint(ipAddr, locPort);
 
                 sListener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                sListener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                 sListener.Bind(ipEndPoint);
             }
@@ -110,6 +111,7 @@ namespace RemoteControllerServer
                 ipEndPointKb = new IPEndPoint(ipAddr, locPort);
 
                 sListenerKb = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                sListenerKb.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                 sListenerKb.Bind(ipEndPointKb);
             }
@@ -131,6 +133,7 @@ namespace RemoteControllerServer
                 ipEndPointM = new IPEndPoint(ipAddr, locPort);
 
                 sListenerM = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                sListenerM.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                 sListenerM.Bind(ipEndPointM);
             }
@@ -157,8 +160,8 @@ namespace RemoteControllerServer
         {
             //byte[] buffer = new byte[1024];
             //Socket handler = sListenerM;
-            Socket handler = null;
-            
+            //Socket handler = null;
+
             //object[] obj = new object[2];
             //obj[0] = buffer;
             //obj[1] = handler;
@@ -166,13 +169,14 @@ namespace RemoteControllerServer
             // Create the state object.
             StateObject state = new StateObject();
             state.workSocket = sListenerM;
-
+            
             sListenerM.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
-        }
 
+        }
         public void AcceptCallback(IAsyncResult ar)
         {
             Socket listener = null;
+            
             Socket handler = null;
             try
             {
@@ -182,7 +186,7 @@ namespace RemoteControllerServer
                 EndPoint endpoint = listener.LocalEndPoint;
                 handler = listener.EndAccept(ar);
                 handler.NoDelay = true;
-
+                
                 //object[] obj = new object[2];
                 //obj[0] = buffer;
                 //obj[1] = handler;
@@ -193,17 +197,26 @@ namespace RemoteControllerServer
 
                 if (endpoint.GetHashCode() == sListener.LocalEndPoint.GetHashCode())
                 {
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                    sListener = handler;
+                    sListener.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackCONNECTION), state);
                     //handler.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), obj);
                 }
                 if (endpoint.GetHashCode() == sListenerKb.LocalEndPoint.GetHashCode())
                 {
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
+                    sListenerKb = handler;
+                    sListenerKb.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
                     //handler.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), obj);
                 }
-                
+                /*
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                listener.BeginAccept(aCallback, listener);
+                if (endpoint.GetHashCode() == sListener.LocalEndPoint.GetHashCode())
+                {
+                    sListener.BeginAccept(aCallback, sListener);
+                }
+                if (endpoint.GetHashCode() == sListenerKb.LocalEndPoint.GetHashCode())
+                {
+                    sListenerKb.BeginAccept(aCallback, sListenerKb);
+                }*/
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -223,43 +236,48 @@ namespace RemoteControllerServer
 
                 // Retrieve the state object and the handler socket
                 // from the asynchronous state object.
-                StateObject state = (StateObject)ar.AsyncState;
-                Socket handler = state.workSocket;
-
-                int bytesRead = handler.EndReceive(ar);
-
-                if (bytesRead > 0)
+                if (sListener.Connected)
                 {
-                    //content += Encoding.Unicode.GetString(buffer, 0, bytesRead);
-                    content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
-                    if (content.IndexOf("<PasswordCheck>") > -1)
+                    StateObject state = (StateObject)ar.AsyncState;
+                    Socket handler = state.workSocket;
+                    
+                    int bytesRead = handler.EndReceive(ar);
+
+                    if (bytesRead > 0)
                     {
-                        string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
-                        if (Check_Password(str, handler))
+                        //content += Encoding.Unicode.GetString(buffer, 0, bytesRead);
+                        content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
+                        if (content.IndexOf("<PasswordCheck>") > -1)
                         {
-                            sListenerKb.Listen(1);
-                            AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
-                            sListenerKb.BeginAccept(aCallback2, sListenerKb);
-                            StartListenMouse();
-                            this.Dispatcher.Invoke((Action)(() =>
-                            { tbConnectionStatus.Text = "Connection accepted.";
-                              tbKeyboardStatus.Text = "Connection Keyboard accepted.";
-                              tbMouseStatus.Text = "Connection Mouse accepted.";
-                            }));
+                            string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
+                            if (Check_Password(str, handler))
+                            {
+                                sListenerKb.Listen(1);
+                                AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
+                                sListenerKb.BeginAccept(aCallback2, sListenerKb);
+                                StartListenMouse();
+                                this.Dispatcher.Invoke((Action)(() =>
+                                {
+                                    tbConnectionStatus.Text = "Connection accepted.";
+                                    tbKeyboardStatus.Text = "Connection Keyboard accepted.";
+                                    tbMouseStatus.Text = "Connection Mouse accepted.";
+                                }));
+                                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                            }
+                        }
+                        else
+                        {
+                            //byte[] buffernew = new byte[1024];
+                            //obj[0] = buffernew;
+                            //obj[1] = handler;
+
+                            //handler.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), obj);
                             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), state);
                         }
                     }
-                    else
-                    {
-                        //byte[] buffernew = new byte[1024];
-                        //obj[0] = buffernew;
-                        //obj[1] = handler;
-
-                        //handler.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), obj);
-                        handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), state);
-                    }
                 }
             }
+            catch (ObjectDisposedException e) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
@@ -278,25 +296,29 @@ namespace RemoteControllerServer
 
                 // Retrieve the state object and the handler socket
                 // from the asynchronous state object.
-                StateObject state = (StateObject)ar.AsyncState;
-                Socket handlerKb = state.workSocket;
-
-                int bytesRead = handlerKb.EndReceive(ar);
-
-                if (bytesRead > 0)
+                if (sListenerKb.Connected)
                 {
-                    content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
+                    StateObject state = (StateObject)ar.AsyncState;
+                    Socket handlerKb = state.workSocket;
 
-                    Parse_KB_Event(content);
+                    int bytesRead = handlerKb.EndReceive(ar);
 
-                    //byte[] buffernew = new byte[1024];
-                    //obj[0] = buffernew;
-                    //obj[1] = handlerKb;
+                    if (bytesRead > 0)
+                    {
+                        content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
 
-                    //handlerKb.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), obj);
-                    handlerKb.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), state);
+                        Parse_KB_Event(content);
+
+                        //byte[] buffernew = new byte[1024];
+                        //obj[0] = buffernew;
+                        //obj[1] = handlerKb;
+
+                        //handlerKb.BeginReceive(buffernew, 0, buffernew.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), obj);
+                        handlerKb.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), state);
+                    }
                 }
             }
+            catch (ObjectDisposedException e) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
       
@@ -312,33 +334,36 @@ namespace RemoteControllerServer
                 //handlerM = (Socket)obj[1];
 
                 string content = string.Empty;
-
-                // Retrieve the state object and the handler socket
-                // from the asynchronous state object.
-                StateObject state = (StateObject)ar.AsyncState;
-                Socket handlerM = state.workSocket;
-
-                int bytesRead = handlerM.EndReceive(ar);
-
-                if (bytesRead > 0)
+                if (sListenerM != null)
                 {
-                    content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
-                    
-                    Parse_Mouse_Event(content);
+                    // Retrieve the state object and the handler socket
+                    // from the asynchronous state object.
+                    StateObject state = (StateObject)ar.AsyncState;
+                    Socket handlerM = state.workSocket;
 
-                    //byte[] buffernew = new byte[1024];
-                    //obj[0] = buffernew;
-                    //obj[1] = handlerM;
-                    //handlerM.BeginReceive(buffernew, 0, buffernew.Length,SocketFlags.None,new AsyncCallback(ReceiveCallbackMouse), obj);
-                    handlerM.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
+                    int bytesRead = handlerM.EndReceive(ar);
+
+                    if (bytesRead > 0)
+                    {
+                        content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
+
+                        Parse_Mouse_Event(content);
+
+                        //byte[] buffernew = new byte[1024];
+                        //obj[0] = buffernew;
+                        //obj[1] = handlerM;
+                        //handlerM.BeginReceive(buffernew, 0, buffernew.Length,SocketFlags.None,new AsyncCallback(ReceiveCallbackMouse), obj);
+                        handlerM.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
+                    }
                 }
             }
+            catch (ObjectDisposedException e) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
       
         public bool Check_Password(String inputpassword, Socket handler) 
         {
-            sListener = handler;
+            //sListener = handler;
             //Socket handler = null;
             try
             {
@@ -387,13 +412,18 @@ namespace RemoteControllerServer
                     sListener.Send(byteData);
                 }));
                 */
-                MessageBox.Show("Inviato");
-                sListener.Disconnect(true);
-                sListenerKb.Disconnect(true);
-                sListenerM.Disconnect(true);
-                //sListener.Close();
-                //sListenerKb.Close();
-                //sListenerM.Close();
+                //MessageBox.Show("Inviato");
+                sListener.Shutdown(SocketShutdown.Both);
+                //sListener.Disconnect(true);
+                sListener.Close();
+
+                sListenerKb.Shutdown(SocketShutdown.Both);
+                //sListenerKb.Disconnect(true);
+                sListenerKb.Close();
+
+                sListenerM.Shutdown(SocketShutdown.Both);
+                //sListenerM.Disconnect(true);
+                sListenerM.Close();
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             
