@@ -202,8 +202,8 @@ namespace RemoteControllerServer
                     //handler.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), obj);
                 }
                 
-                //AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                //listener.BeginAccept(aCallback, listener);
+                AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
+                listener.BeginAccept(aCallback, listener);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -338,7 +338,7 @@ namespace RemoteControllerServer
       
         public bool Check_Password(String inputpassword, Socket handler) 
         {
-           
+            sListener = handler;
             //Socket handler = null;
             try
             {
@@ -346,7 +346,7 @@ namespace RemoteControllerServer
                 {
                     string str = "ok";
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
-                
+                    //handler.Send(byteData);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
                     //sListener.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), sListener);
                     return true;
@@ -356,6 +356,8 @@ namespace RemoteControllerServer
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
                 }
+                //int bytesSent = handler.EndSend(ar);
+                //handler.EndSend(handler,);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             
@@ -378,8 +380,7 @@ namespace RemoteControllerServer
             {
                 string str = "Disconnect";
                 byte[] byteData = Encoding.Unicode.GetBytes(str);
-
-                //sListener.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), sListener);
+                sListener.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), sListener);
                 /*
                 this.Dispatcher.Invoke((Action)(() =>
                 {
@@ -387,10 +388,12 @@ namespace RemoteControllerServer
                 }));
                 */
                 MessageBox.Show("Inviato");
-                
-                sListener.Close();
-                sListenerKb.Close();
-                sListenerM.Close();
+                sListener.Disconnect(true);
+                sListenerKb.Disconnect(true);
+                sListenerM.Disconnect(true);
+                //sListener.Close();
+                //sListenerKb.Close();
+                //sListenerM.Close();
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             
