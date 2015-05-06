@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using Utils.InputGenerator;
+using Utils.Clipboard;
 
 namespace RemoteControllerServer
 {
@@ -26,6 +27,7 @@ namespace RemoteControllerServer
         String pass = "";
         String locIp = GetIP4Address();
         int port_conn = 4510;
+        ClipboardListener CListener;
 
         public MainWindow()
         {
@@ -46,6 +48,8 @@ namespace RemoteControllerServer
                 Create_UDPConnection_Mouse();
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
+                CListener = new ClipboardListener(this);
+                CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
             }
             else
             {
@@ -416,6 +420,16 @@ namespace RemoteControllerServer
                     tbMouseStatus.Text = "mouse received -> " + mouseEvent + " data -> " + words[3];
                 }));
             }
+        }
+
+        void CListener_ClipboardChange(object sender, RawClipboardEventArgs args)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                tbKeyboardStatus.Text = "NEW CLIPBOARD CONTENT! --> " + args.changed ;
+            }));
+            MessageBox.Show("daje");
+                
         }
     }
 }

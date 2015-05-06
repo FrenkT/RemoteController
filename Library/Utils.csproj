@@ -61,6 +61,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ClipboardListener.cs" />
     <Compile Include="KeyboardListener.cs" />
     <Compile Include="InputGenerator.cs" />
     <Compile Include="MainWindow.xaml.cs">
