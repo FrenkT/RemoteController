@@ -21,6 +21,7 @@ namespace RemoteControllerServer
     {
 
         Socket controlSocket, keyboardSocket, mouseSocket;
+        Socket receiveControl, receiveKeyboard;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         String pass = "";
         String locIp = GetIP4Address();
@@ -84,7 +85,7 @@ namespace RemoteControllerServer
 
                 controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 controlSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
+                controlSocket.LingerState = new LingerOption(true, 0);
                 controlSocket.Bind(ipEndPoint);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }    
@@ -106,7 +107,7 @@ namespace RemoteControllerServer
 
                 keyboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 keyboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
+                keyboardSocket.LingerState = new LingerOption(true, 0);
                 keyboardSocket.Bind(ipEndPointKb);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
@@ -128,7 +129,7 @@ namespace RemoteControllerServer
 
                 mouseSocket = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                 mouseSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
+                //mouseSocket.LingerState = new LingerOption(true, 0);
                 mouseSocket.Bind(ipEndPointM);
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
@@ -138,12 +139,12 @@ namespace RemoteControllerServer
         {
             try
             {
-                controlSocket.Listen(1);
-
+                controlSocket.Listen(10);
+                tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 controlSocket.BeginAccept(aCallback, controlSocket);
                 
-                tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
+                
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             StartListen_Button.IsEnabled = false;
@@ -175,15 +176,16 @@ namespace RemoteControllerServer
 
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
                 {
-                    controlSocket = handler;
-                    controlSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                    //controlSocket = handler;
+                    receiveControl = handler;
+                    receiveControl.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackCONNECTION), state);
                 }
                 if (endpoint.GetHashCode() == keyboardSocket.LocalEndPoint.GetHashCode())
                 {
-                    keyboardSocket = handler;
-                    keyboardSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
+                    receiveKeyboard = handler;
+                    receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
                 }
-                /*
+                
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
                 {
@@ -192,7 +194,7 @@ namespace RemoteControllerServer
                 if (endpoint.GetHashCode() == keyboardSocket.LocalEndPoint.GetHashCode())
                 {
                     keyboardSocket.BeginAccept(aCallback, keyboardSocket);
-                }*/
+                }
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -203,7 +205,7 @@ namespace RemoteControllerServer
             {
                 string content = string.Empty;
 
-                if (controlSocket.Connected)
+                if (receiveControl.Connected)
                 {
                     StateObject state = (StateObject)ar.AsyncState;
                     Socket handler = state.workSocket;
@@ -218,7 +220,7 @@ namespace RemoteControllerServer
                             string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
                             if (Check_Password(str, handler))
                             {
-                                keyboardSocket.Listen(1);
+                                keyboardSocket.Listen(10);
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
                                 StartListenMouse();
@@ -248,7 +250,7 @@ namespace RemoteControllerServer
             {
                 string content = string.Empty;
 
-                if (keyboardSocket.Connected)
+                if (receiveKeyboard.Connected)
                 {
                     StateObject state = (StateObject)ar.AsyncState;
                     Socket handlerKb = state.workSocket;
@@ -332,13 +334,17 @@ namespace RemoteControllerServer
             {
                 string str = "Disconnect";
                 byte[] byteData = Encoding.Unicode.GetBytes(str);
-                controlSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), controlSocket);
+                receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
-                controlSocket.Shutdown(SocketShutdown.Both);
-                controlSocket.Close();
+                receiveControl.Shutdown(SocketShutdown.Both);
+                receiveControl.Disconnect(true);
+                receiveControl.Close();
+                receiveControl.Dispose();
 
-                keyboardSocket.Shutdown(SocketShutdown.Both);
-                keyboardSocket.Close();
+                receiveKeyboard.Shutdown(SocketShutdown.Both);
+                receiveKeyboard.Disconnect(true);
+                receiveKeyboard.Close();
+                receiveKeyboard.Dispose();
 
                 mouseSocket.Shutdown(SocketShutdown.Both);
                 mouseSocket.Close();
