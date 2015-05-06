@@ -139,7 +139,7 @@ namespace RemoteControllerServer
         {
             try
             {
-                controlSocket.Listen(10);
+                controlSocket.Listen(100);
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 controlSocket.BeginAccept(aCallback, controlSocket);
@@ -209,7 +209,7 @@ namespace RemoteControllerServer
                 {
                     StateObject state = (StateObject)ar.AsyncState;
                     Socket handler = state.workSocket;
-                    
+
                     int bytesRead = handler.EndReceive(ar);
 
                     if (bytesRead > 0)
@@ -220,7 +220,7 @@ namespace RemoteControllerServer
                             string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
                             if (Check_Password(str, handler))
                             {
-                                keyboardSocket.Listen(10);
+                                keyboardSocket.Listen(100);
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
                                 StartListenMouse();
@@ -240,7 +240,8 @@ namespace RemoteControllerServer
                     }
                 }
             }
-            catch (ObjectDisposedException e) { }
+            catch (ObjectDisposedException) { }
+            catch (SocketException) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
@@ -266,7 +267,8 @@ namespace RemoteControllerServer
                     }
                 }
             }
-            catch (ObjectDisposedException e) { }
+            catch (ObjectDisposedException) { }
+            catch (SocketException) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
       
@@ -348,6 +350,12 @@ namespace RemoteControllerServer
 
                 mouseSocket.Shutdown(SocketShutdown.Both);
                 mouseSocket.Close();
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    tbConnectionStatus.Text = "Connection Close.";
+                    tbKeyboardStatus.Text = "Connection Keyboard Close.";
+                    tbMouseStatus.Text = "Connection Mouse Close.";
+                }));
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             
