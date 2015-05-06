@@ -145,8 +145,11 @@ namespace RemoteController
                     if (content.IndexOf("Disconnect") > -1)
                     {
                         try
-                        {   
+                        {
+                            controlSocket.Shutdown(SocketShutdown.Both);
+                            controlSocket.Disconnect(false);
                             controlSocket.Close();
+                            controlSocket.Dispose();
                             keyboardSocket.Close();
                             mouseSocket.Close();
                             this.Dispatcher.Invoke((Action)(() =>
@@ -189,6 +192,7 @@ namespace RemoteController
 
             controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             controlSocket.NoDelay = true;
+            controlSocket.LingerState = new LingerOption(true, 0);
             try
             {
                 controlSocket.Connect(ipEndPoint);
@@ -232,6 +236,7 @@ namespace RemoteController
 
             keyboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             keyboardSocket.NoDelay = true;
+            keyboardSocket.LingerState = new LingerOption(true, 0);
             try
             {
                 keyboardSocket.Connect(ipEndPoint);
