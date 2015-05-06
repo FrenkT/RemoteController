@@ -51,7 +51,9 @@ namespace RemoteController
             byte[] passwordToByte = Encoding.Unicode.GetBytes(passwordMessage);
             int bytesSend = controlSocket.Send(passwordToByte);
 
-            if (ReceivePasswordCheck())
+            int pwdAccepted = ReceivePasswordCheck();
+
+            if (pwdAccepted == 1)
             {
                 InitKeyboardSocket(workingPort+10);
                 InitMouseSocket(workingPort+20);
@@ -74,29 +76,38 @@ namespace RemoteController
                 MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
                 MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
             }
-            else 
+            else if (pwdAccepted == 0)
             {
                 controlSocket.Close();
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 MessageBox.Show("Wrong Password");
-            } 
+            }
+            else
+            {
+                MessageBox.Show("Server could not check password, try changing port");
+            }
         }
 
-        private bool ReceivePasswordCheck()
+        private int ReceivePasswordCheck()
         {
-            bool accepted = false;
             byte[] bytes = new byte[1024];
             try
             {
                 int bytesReceived = controlSocket.Receive(bytes);
                 String passwordCheck = Encoding.Unicode.GetString(bytes, 0, bytesReceived);
-                if (passwordCheck.CompareTo("ok") == 0) {
-                    accepted = true;
+                if (passwordCheck.CompareTo("ok") == 0)
+                {
+                    return 1;
                 }
+                return 0;
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
-            return accepted;
+            catch (SocketException) { return 2; }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.ToString());
+                return 2;
+            }
         }
 
         private void ListenFromServer()
@@ -193,6 +204,7 @@ namespace RemoteController
             controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             controlSocket.NoDelay = true;
             controlSocket.LingerState = new LingerOption(true, 0);
+            controlSocket.ReceiveTimeout = 2000;
             try
             {
                 controlSocket.Connect(ipEndPoint);
