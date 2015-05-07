@@ -36,7 +36,11 @@ namespace RemoteControllerServer
         {
             InitializeComponent();
             ni = new System.Windows.Forms.NotifyIcon();
-            ni.Icon = new System.Drawing.Icon(@"C:\Users\Albo\Desktop\PDS\progetto\RemoteController\RemoteControllerServer\Icons\Computers.ico");
+
+            var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+            string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
+
+            ni.Icon = new System.Drawing.Icon(logoimage);
             ni.Visible = true;
             ni.DoubleClick +=
                 delegate(object sender, EventArgs args)
