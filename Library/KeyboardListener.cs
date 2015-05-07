@@ -12,62 +12,25 @@ namespace Utils.Keyboard
 {
     public class KeyboardListener : IDisposable
     {
-        /// <summary>
-        /// Creates global keyboard listener.
-        /// </summary>
+        public event RawKeyEventHandler KeyDown;
+        public event RawKeyEventHandler KeyUp;
+        private IntPtr hookId = IntPtr.Zero;
+        private delegate void KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode);
+        private KeyboardCallbackAsync hookedKeyboardCallbackAsync;
+        private InterceptKeys.LowLevelKeyboardProc hookedLowLevelKeyboardProc;
+
         public KeyboardListener()
         {
-            // We have to store the HookCallback, so that it is not garbage collected runtime
             hookedLowLevelKeyboardProc = (InterceptKeys.LowLevelKeyboardProc)LowLevelKeyboardProc;
-
-            // Set the hook
             hookId = InterceptKeys.SetHook(hookedLowLevelKeyboardProc);
-
-            // Assign the asynchronous callback event
             hookedKeyboardCallbackAsync = new KeyboardCallbackAsync(KeyboardListener_KeyboardCallbackAsync);
         }
 
-        /// <summary>
-        /// Destroys global keyboard listener.
-        /// </summary>
         ~KeyboardListener()
         {
             Dispose();
         }
 
-        /// <summary>
-        /// Fired when any of the keys is pressed down.
-        /// </summary>
-        public event RawKeyEventHandler KeyDown;
-
-        /// <summary>
-        /// Fired when any of the keys is released.
-        /// </summary>
-        public event RawKeyEventHandler KeyUp;
-
-        #region Inner workings
-        /// <summary>
-        /// Hook ID
-        /// </summary>
-        private IntPtr hookId = IntPtr.Zero;
-
-        /// <summary>
-        /// Asynchronous callback hook.
-        /// </summary>
-        /// <param name="nCode"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        private delegate void KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode);
-
-        /// <summary>
-        /// Actual callback hook.
-        /// 
-        /// <remarks>Calls asynchronously the asyncCallback.</remarks>
-        /// </summary>
-        /// <param name="nCode"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
         private IntPtr LowLevelKeyboardProc(int nCode, UIntPtr wParam, IntPtr lParam)
         {
@@ -81,21 +44,6 @@ namespace Utils.Keyboard
             return InterceptKeys.CallNextHookEx(hookId, nCode, wParam, lParam);
         }
 
-        /// <summary>
-        /// Event to be invoked asynchronously (BeginInvoke) each time key is pressed.
-        /// </summary>
-        private KeyboardCallbackAsync hookedKeyboardCallbackAsync;
-
-        /// <summary>
-        /// Contains the hooked callback in runtime.
-        /// </summary>
-        private InterceptKeys.LowLevelKeyboardProc hookedLowLevelKeyboardProc;
-
-        /// <summary>
-        /// HookCallbackAsync procedure that calls accordingly the KeyDown or KeyUp events.
-        /// </summary>
-        /// <param name="keyEvent">Keyboard event</param>
-        /// <param name="vkCode">VKCode</param>
         void KeyboardListener_KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode)
         {
             switch (keyEvent)
@@ -125,46 +73,21 @@ namespace Utils.Keyboard
             }
         }
 
-        #endregion
-
-        #region IDisposable Members
-
-        /// <summary>
-        /// Disposes the hook.
-        /// <remarks>This call is required as it calls the UnhookWindowsHookEx.</remarks>
-        /// </summary>
         public void Dispose()
         {
             InterceptKeys.UnhookWindowsHookEx(hookId);
         }
 
-        #endregion
     }
-    /// <summary>
-    /// Raw KeyEvent arguments.
-    /// </summary>
+
     public class RawKeyEventArgs : EventArgs
     {
-        /// <summary>
-        /// VKCode of the key.
-        /// </summary>
         public int VKCode;
 
-        /// <summary>
-        /// WPF Key of the key.
-        /// </summary>
         public Key Key;
 
-        /// <summary>
-        /// Is the hitted key system key.
-        /// </summary>
         public bool IsSysKey;
 
-        /// <summary>
-        /// Create raw keyevent arguments.
-        /// </summary>
-        /// <param name="VKCode"></param>
-        /// <param name="isSysKey"></param>
         public RawKeyEventArgs(int VKCode, bool isSysKey)
         {
             this.VKCode = VKCode;
@@ -173,17 +96,8 @@ namespace Utils.Keyboard
         }
     }
 
-    /// <summary>
-    /// Raw keyevent handler.
-    /// </summary>
-    /// <param name="sender">sender</param>
-    /// <param name="args">raw keyevent arguments</param>
     public delegate void RawKeyEventHandler(object sender, RawKeyEventArgs args);
 
-    #region WINAPI Helper class
-    /// <summary>
-    /// Winapi Key interception helper class.
-    /// </summary>
     internal static class InterceptKeys
     {
         public delegate IntPtr LowLevelKeyboardProc(int nCode, UIntPtr wParam, IntPtr lParam);
@@ -220,5 +134,4 @@ namespace Utils.Keyboard
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
     }
-    #endregion
 }
