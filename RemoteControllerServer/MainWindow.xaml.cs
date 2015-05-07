@@ -6,9 +6,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using Utils.InputGenerator;
+using System.Windows.Forms;
 
 namespace RemoteControllerServer
 {
+    
+    
     public class StateObject
     {
         public Socket workSocket = null;
@@ -19,7 +22,7 @@ namespace RemoteControllerServer
 
     public partial class MainWindow : Window
     {
-
+        System.Windows.Forms.NotifyIcon ni;
         Socket controlSocket, keyboardSocket, mouseSocket;
         Socket receiveControl, receiveKeyboard;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
@@ -30,11 +33,32 @@ namespace RemoteControllerServer
         public MainWindow()
         {
             InitializeComponent();
+            ni = new System.Windows.Forms.NotifyIcon();
+            ni.Icon = new System.Drawing.Icon(@"C:\Users\Albo\Desktop\PDS\progetto\RemoteController\RemoteControllerServer\Icons\Computers.ico");
+            ni.Visible = true;
+            ni.DoubleClick +=
+                delegate(object sender, EventArgs args)
+                {
+                    this.Show();
+                    this.WindowState = WindowState.Normal;
+                };
+            
             Start_Button.IsEnabled = true;
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = false;
         }
-       
+        
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+                ni.ShowBalloonTip(5000, "APP Hidden", "Application has been minimized", ToolTipIcon.Info);
+                
+            }
+            base.OnStateChanged(e);
+        }
+
         private void Start_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
@@ -49,7 +73,7 @@ namespace RemoteControllerServer
             }
             else
             {
-                MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             
         }
@@ -88,7 +112,7 @@ namespace RemoteControllerServer
                 controlSocket.LingerState = new LingerOption(true, 0);
                 controlSocket.Bind(ipEndPoint);
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }    
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }    
         }
        
         private void Create_TCPConnection_Keyboard() {
@@ -110,7 +134,7 @@ namespace RemoteControllerServer
                 keyboardSocket.LingerState = new LingerOption(true, 0);
                 keyboardSocket.Bind(ipEndPointKb);
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
         private void Create_UDPConnection_Mouse() {
@@ -132,7 +156,7 @@ namespace RemoteControllerServer
                 //mouseSocket.LingerState = new LingerOption(true, 0);
                 mouseSocket.Bind(ipEndPointM);
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
         private void Listen_Click(object sender, RoutedEventArgs e)
@@ -146,7 +170,7 @@ namespace RemoteControllerServer
                 
                 
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = true;
         }
@@ -196,7 +220,7 @@ namespace RemoteControllerServer
                     keyboardSocket.BeginAccept(aCallback, keyboardSocket);
                 }
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
         public void ReceiveCallbackCONNECTION(IAsyncResult ar)
@@ -242,7 +266,7 @@ namespace RemoteControllerServer
             }
             catch (ObjectDisposedException) { }
             catch (SocketException) { }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
         public void ReceiveCallbackKB(IAsyncResult ar)
@@ -269,7 +293,7 @@ namespace RemoteControllerServer
             }
             catch (ObjectDisposedException) { }
             catch (SocketException) { }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
         public void ReceiveCallbackMouse(IAsyncResult ar)
@@ -295,7 +319,7 @@ namespace RemoteControllerServer
                 }
             }
             catch (ObjectDisposedException e) { }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
         public bool Check_Password(String inputpassword, Socket handler) 
@@ -315,7 +339,7 @@ namespace RemoteControllerServer
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
                 }
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
             return false;
         }
@@ -327,7 +351,7 @@ namespace RemoteControllerServer
                 Socket handler = (Socket)ar.AsyncState;
                 int bytesSend = handler.EndSend(ar);
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
         
         private void Close_Click(object sender, RoutedEventArgs e)
@@ -357,7 +381,7 @@ namespace RemoteControllerServer
                     tbMouseStatus.Text = "Connection Mouse Close.";
                 }));
             }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
             Close_Button.IsEnabled = false;
             Start_Button.IsEnabled = true;
