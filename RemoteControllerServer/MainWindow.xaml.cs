@@ -452,7 +452,7 @@ namespace RemoteControllerServer
             {
                 tbKeyboardStatus.Text = "NEW CLIPBOARD CONTENT! --> " + args.changed ;
             }));
-            MessageBox.Show("daje");
+            System.Windows.MessageBox.Show("daje");
                 
         }
     }
