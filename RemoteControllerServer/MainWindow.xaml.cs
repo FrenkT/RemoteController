@@ -23,9 +23,10 @@ namespace RemoteControllerServer
 
     public partial class MainWindow : Window
     {
-        NotifyIcon ni;
-        Socket controlSocket, keyboardSocket, mouseSocket;
-        Socket receiveControl, receiveKeyboard;
+        System.Windows.Forms.NotifyIcon ni;
+        Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
+        Socket receiveControl, receiveKeyboard, receiveClipboard;
+
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         String pass = "";
         String locIp = GetIP4Address();
@@ -74,6 +75,7 @@ namespace RemoteControllerServer
                 InitControl_Socket();
                 Create_TCPConnection_Keyboard();
                 Create_UDPConnection_Mouse();
+                Create_TCPConnection_Clipboard();
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
                 CListener = new ClipboardListener(this);
@@ -144,6 +146,29 @@ namespace RemoteControllerServer
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
+
+        private void Create_TCPConnection_Clipboard()
+        {
+            int locPort = port_conn + 30;
+            try
+            {
+                SocketPermission permissionClipboard = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
+
+                clipboardSocket = null;
+
+                permissionClipboard.Demand();
+
+                IPAddress ipAddr = IPAddress.Parse(locIp);
+
+                ipEndPointKb = new IPEndPoint(ipAddr, locPort);
+
+                clipboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                clipboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                clipboardSocket.LingerState = new LingerOption(true, 0);
+                clipboardSocket.Bind(ipEndPointKb);
+            }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+        }
       
         private void Create_UDPConnection_Mouse() {
             int locPort = port_conn+20;
@@ -174,9 +199,7 @@ namespace RemoteControllerServer
                 controlSocket.Listen(100);
                 tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                controlSocket.BeginAccept(aCallback, controlSocket);
-                
-                
+                controlSocket.BeginAccept(aCallback, controlSocket);                
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             StartListen_Button.IsEnabled = false;
@@ -217,6 +240,11 @@ namespace RemoteControllerServer
                     receiveKeyboard = handler;
                     receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
                 }
+                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                {
+                    receiveClipboard = handler;
+                    receiveClipboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackClipboard), state);
+                }
                 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
@@ -226,6 +254,10 @@ namespace RemoteControllerServer
                 if (endpoint.GetHashCode() == keyboardSocket.LocalEndPoint.GetHashCode())
                 {
                     keyboardSocket.BeginAccept(aCallback, keyboardSocket);
+                }
+                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                {
+                    clipboardSocket.BeginAccept(aCallback, clipboardSocket);
                 }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
@@ -256,6 +288,9 @@ namespace RemoteControllerServer
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
                                 StartListenMouse();
+                                clipboardSocket.Listen(100);
+                                AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
+                                clipboardSocket.BeginAccept(aCallback3, keyboardSocket);
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
                                     tbConnectionStatus.Text = "Connection accepted.";
