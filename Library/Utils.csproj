@@ -62,6 +62,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ClipboardListener.cs" />
+    <Compile Include="ClipboardSender.cs" />
     <Compile Include="KeyboardListener.cs" />
     <Compile Include="InputGenerator.cs" />
     <Compile Include="MainWindow.xaml.cs">

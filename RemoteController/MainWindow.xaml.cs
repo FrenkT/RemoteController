@@ -28,7 +28,7 @@ namespace RemoteController
 
     public partial class MainWindow : Window
     {
-        Socket controlSocket, keyboardSocket, mouseSocket;
+        Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         String workingServerIp = "";
         int workingPort = 0;
         String workingPassword = "";
@@ -57,7 +57,7 @@ namespace RemoteController
             {
                 InitKeyboardSocket(workingPort+10);
                 InitMouseSocket(workingPort+20);
-
+                InitClipboardSocket(workingPort+30);
                 ListenFromServer();
 
                 tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
@@ -252,6 +252,49 @@ namespace RemoteController
             try
             {
                 keyboardSocket.Connect(ipEndPoint);
+            }
+            catch (ArgumentNullException)
+            {
+                //address is null.
+                ArgumentNullException e = new ArgumentNullException();
+                throw e;
+            }
+            catch (ArgumentException)
+            {
+                // The length of address is zero.
+                ArgumentException e = new ArgumentException();
+                throw e;
+            }
+            catch (SocketException)
+            {
+                // An error occurred when attempting to access the socket.
+                SocketException e = new SocketException();
+                throw e;
+            }
+        }
+
+        private void InitClipboardSocket(int p) 
+        {
+            IPEndPoint ipEndPoint = null;
+            SocketPermission permission = new SocketPermission(NetworkAccess.Connect, TransportType.Tcp, "", SocketPermission.AllPorts);
+            permission.Demand();
+
+            IPAddress ipAddr = IPAddress.Parse(workingServerIp);
+            try
+            {
+                ipEndPoint = new IPEndPoint(ipAddr, p);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new ArgumentNullException();
+            }
+
+            clipboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            clipboardSocket.NoDelay = true;
+            clipboardSocket.LingerState = new LingerOption(true, 0);
+            try
+            {
+                clipboardSocket.Connect(ipEndPoint);
             }
             catch (ArgumentNullException)
             {
@@ -557,6 +600,5 @@ namespace RemoteController
                 } 
             }
         }
-
     }
 }

@@ -23,7 +23,7 @@ namespace RemoteControllerServer
 
     public partial class MainWindow : Window
     {
-        System.Windows.Forms.NotifyIcon ni;
+        NotifyIcon ni;
         Socket controlSocket, keyboardSocket, mouseSocket;
         Socket receiveControl, receiveKeyboard;
         IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
