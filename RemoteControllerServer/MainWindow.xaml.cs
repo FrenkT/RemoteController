@@ -16,7 +16,7 @@ namespace RemoteControllerServer
     public class StateObject
     {
         public Socket workSocket = null;
-        public const int BufferSize = 1024;
+        public const int BufferSize = 10;
         public byte[] buffer = new byte[BufferSize];
         public StringBuilder sb = new StringBuilder();
     }
@@ -240,11 +240,11 @@ namespace RemoteControllerServer
                     receiveKeyboard = handler;
                     receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
                 }
-                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                /*if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
                 {
                     receiveClipboard = handler;
                     receiveClipboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackClipboard), state);
-                }
+                }*/
                 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
