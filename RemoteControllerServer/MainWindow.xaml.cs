@@ -8,6 +8,8 @@ using System.IO;
 using Utils.InputGenerator;
 using System.Windows.Forms;
 using Utils.Clipboard;
+using System.Threading;
+using Utils.ClipboardSend;
 
 namespace RemoteControllerServer
 {
@@ -16,7 +18,7 @@ namespace RemoteControllerServer
     public class StateObject
     {
         public Socket workSocket = null;
-        public const int BufferSize = 10;
+        public const int BufferSize = 1024;
         public byte[] buffer = new byte[BufferSize];
         public StringBuilder sb = new StringBuilder();
     }
@@ -32,6 +34,7 @@ namespace RemoteControllerServer
         String locIp = GetIP4Address();
         int port_conn = 4510;
         ClipboardListener CListener;
+        ClipboardSender CSender;
 
         public MainWindow()
         {
@@ -76,6 +79,7 @@ namespace RemoteControllerServer
                 Create_TCPConnection_Keyboard();
                 Create_UDPConnection_Mouse();
                 Create_TCPConnection_Clipboard();
+                CSender = new ClipboardSender(clipboardSocket);
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
                 CListener = new ClipboardListener(this);
@@ -255,10 +259,10 @@ namespace RemoteControllerServer
                 {
                     keyboardSocket.BeginAccept(aCallback, keyboardSocket);
                 }
-                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                /*if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
                 {
                     clipboardSocket.BeginAccept(aCallback, clipboardSocket);
-                }
+                }*/
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
@@ -288,9 +292,9 @@ namespace RemoteControllerServer
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
                                 StartListenMouse();
-                                clipboardSocket.Listen(100);
+                                /*clipboardSocket.Listen(100);
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
-                                clipboardSocket.BeginAccept(aCallback3, keyboardSocket);
+                                clipboardSocket.BeginAccept(aCallback3, keyboardSocket);*/
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
                                     tbConnectionStatus.Text = "Connection accepted.";
@@ -491,7 +495,8 @@ namespace RemoteControllerServer
             {
                 tbKeyboardStatus.Text = "NEW CLIPBOARD CONTENT! --> " + args.changed ;
             }));
-            System.Windows.MessageBox.Show("daje");
+            
+            new Thread(() => CSender.SendClipboard()).Start();
                 
         }
     }

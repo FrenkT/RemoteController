@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using Utils.Keyboard;
 using Utils.Mouse;
+using Utils.ClipboardSend;
+using System.Threading;
 
 namespace RemoteController
 {
@@ -36,6 +38,7 @@ namespace RemoteController
         List<Server> serverList = new List<Server>();
         KeyboardListener KListener;
         MouseListener MListener;
+        ClipboardSender CSender;
 
         public MainWindow()
         {
@@ -58,7 +61,9 @@ namespace RemoteController
                 InitKeyboardSocket(workingPort+10);
                 InitMouseSocket(workingPort+20);
                 InitClipboardSocket(workingPort+30);
+                CSender = new ClipboardSender(clipboardSocket);
                 ListenFromServer();
+
 
                 tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
                 tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
@@ -75,6 +80,7 @@ namespace RemoteController
                 MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
                 MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
                 MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+                new Thread(() => CSender.SendClipboard()).Start();
             }
             else if (pwdAccepted == 0)
             {

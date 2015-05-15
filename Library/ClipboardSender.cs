@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace Utils.ClipboardSend
 {
-    class ClipboardSender
+    public class ClipboardSender
     {
 
         Socket clipboardSocket;
@@ -27,11 +27,16 @@ namespace Utils.ClipboardSend
                     {
                         string data = System.Windows.Clipboard.GetText();
                         byte[] dataToByte = Encoding.Unicode.GetBytes(data);
+
+                        byte[] clipboardTypeToByte = new byte[4];
+                        clipboardTypeToByte = Encoding.Unicode.GetBytes("t");
+                        int sent = clipboardSocket.Send(clipboardTypeToByte);
+                        
                         int dataSize = dataToByte.Length;
                         byte[] dataSizeToByte = new byte[4];
                         dataSizeToByte = BitConverter.GetBytes(dataSize);
-
-                        int sent = clipboardSocket.Send(dataSizeToByte);
+                        sent = clipboardSocket.Send(dataSizeToByte);
+                        
                         int total = 0;
                         int dataLeft = dataSize;
 
@@ -41,14 +46,35 @@ namespace Utils.ClipboardSend
                             total += sent;
                             dataLeft -= sent;
                         }
+                        MessageBox.Show("sent everything");
                     }
 
                 }
             }
         }
  
-        public void ReceiveCallbackClipboard(IAsyncResult ar)
+        public void ReceiveClipboard()
         {
+            if (clipboardSocket != null)
+            {
+                if (clipboardSocket.Connected)
+                {
+                    byte[] clipboardTypeToByte = new byte[4];
+                    int bytesReceived = clipboardSocket.Receive(clipboardTypeToByte);
+                    String clipboardType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
+
+                    if (clipboardType.CompareTo("t") == 0)
+                    {
+                        byte[] clipboardSizeToByte = new byte[4];
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
+                        MessageBox.Show("receivd t, size = " + clipboardSize);
+                    }
+
+                    ReceiveClipboard();
+
+                }
+            }
 
         }
     }
