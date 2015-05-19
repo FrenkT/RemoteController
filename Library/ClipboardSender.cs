@@ -87,6 +87,36 @@ namespace Utils.ClipboardSend
                         }
                     }
 
+                    if (System.Windows.Clipboard.ContainsAudio())
+                    {
+                        Stream data = System.Windows.Clipboard.GetAudioStream();
+                        byte[] dataToByte;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            data.CopyTo(memoryStream);
+                            dataToByte = memoryStream.ToArray();
+                        }
+
+                        byte[] clipboardTypeToByte = new byte[4];
+                        clipboardTypeToByte = Encoding.Unicode.GetBytes("a");
+                        int sent = clipboardSocket.Send(clipboardTypeToByte);
+
+                        int dataSize = dataToByte.Length;
+                        byte[] dataSizeToByte = new byte[4];
+                        dataSizeToByte = BitConverter.GetBytes(dataSize);
+                        sent = clipboardSocket.Send(dataSizeToByte);
+
+                        int total = 0;
+                        int dataLeft = dataSize;
+
+                        while (total < dataSize)
+                        {
+                            sent = clipboardSocket.Send(dataToByte, total, dataLeft, SocketFlags.None);
+                            total += sent;
+                            dataLeft -= sent;
+                        }
+                    }
+
                 }
             }
         }
@@ -155,9 +185,33 @@ namespace Utils.ClipboardSend
                         image.StreamSource = stream;
                         image.EndInit();
 
-
                         System.Windows.Clipboard.SetImage(image);
                     }
+
+                    if (clipboardType.CompareTo("a") == 0)
+                    {
+                        byte[] clipboardSizeToByte = new byte[4];
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
+
+                        int total = 0;
+                        int recv;
+                        int dataleft = clipboardSize;
+                        byte[] clipboardContent = new byte[clipboardSize];
+                        while (total < clipboardSize)
+                        {
+                            recv = clipboardSocket.Receive(clipboardContent, total, dataleft, SocketFlags.None);
+                            if (recv == 0)
+                            {
+                                clipboardContent = null;
+                                break;
+                            }
+                            total += recv;
+                            dataleft -= recv;
+                        }
+                        System.Windows.Clipboard.SetAudio(clipboardContent);
+                    }
+
 
                     ReceiveClipboard();  //TODO
 
