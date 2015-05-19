@@ -16,7 +16,7 @@ namespace Utils.ClipboardSend
         public ClipboardSender(Socket socket) {
             clipboardSocket = socket;
         }
-        
+
         public void SendClipboard()
         {
             if (clipboardSocket != null)
@@ -68,7 +68,26 @@ namespace Utils.ClipboardSend
                         byte[] clipboardSizeToByte = new byte[4];
                         bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
                         int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
-                        MessageBox.Show("receivd t, size = " + clipboardSize);
+
+                        int total = 0;
+                        int recv;
+                        int dataleft = clipboardSize;
+                        byte[] clipboardContent = new byte[clipboardSize];
+                        while (total < clipboardSize)
+                        {
+                            recv = clipboardSocket.Receive(clipboardContent, total, dataleft, SocketFlags.None);
+                            if (recv == 0)
+                            {
+                                clipboardContent = null;
+                                break;
+                            }
+                            total += recv;
+                            dataleft -= recv;
+                        }
+
+                        String clipboardContentToString = Encoding.Unicode.GetString(clipboardContent, 0, total);
+                        MessageBox.Show("Received clipboard content:" + clipboardContentToString +"|||");
+
                     }
 
                     ReceiveClipboard();
