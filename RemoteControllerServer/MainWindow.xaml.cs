@@ -79,7 +79,7 @@ namespace RemoteControllerServer
                 Create_TCPConnection_Keyboard();
                 Create_UDPConnection_Mouse();
                 Create_TCPConnection_Clipboard();
-                CSender = new ClipboardSender(clipboardSocket);
+                
                 Start_Button.IsEnabled = false;
                 StartListen_Button.IsEnabled = true;
                 CListener = new ClipboardListener(this);
@@ -244,11 +244,12 @@ namespace RemoteControllerServer
                     receiveKeyboard = handler;
                     receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
                 }
-                /*if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
                 {
                     receiveClipboard = handler;
-                    receiveClipboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackClipboard), state);
-                }*/
+                    CSender = new ClipboardSender(receiveClipboard);
+                    //receiveClipboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackClipboard), state);
+                }
                 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
@@ -259,10 +260,10 @@ namespace RemoteControllerServer
                 {
                     keyboardSocket.BeginAccept(aCallback, keyboardSocket);
                 }
-                /*if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
+                if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
                 {
                     clipboardSocket.BeginAccept(aCallback, clipboardSocket);
-                }*/
+                }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
@@ -292,9 +293,10 @@ namespace RemoteControllerServer
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
                                 StartListenMouse();
-                                /*clipboardSocket.Listen(100);
+                                clipboardSocket.Listen(100);
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
-                                clipboardSocket.BeginAccept(aCallback3, keyboardSocket);*/
+                                clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
+                                
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
                                     tbConnectionStatus.Text = "Connection accepted.";
@@ -495,8 +497,14 @@ namespace RemoteControllerServer
             {
                 tbKeyboardStatus.Text = "NEW CLIPBOARD CONTENT! --> " + args.changed ;
             }));
-            
-            new Thread(() => CSender.SendClipboard()).Start();
+            //System.Windows.MessageBox.Show("ClipChange");
+            if (CSender != null) 
+            {
+                Thread t = new Thread(() => CSender.SendClipboard());
+                t.SetApartmentState(ApartmentState.STA);
+                t.Start();
+            }
+                
                 
         }
     }
