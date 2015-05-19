@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Windows;
+using System.Windows.Media.Imaging;
+using System.IO;
+using System.Drawing;
 
 namespace Utils.ClipboardSend
 {
@@ -46,7 +49,42 @@ namespace Utils.ClipboardSend
                             total += sent;
                             dataLeft -= sent;
                         }
-                        MessageBox.Show("sent everything");
+                    }
+
+                    if (System.Windows.Clipboard.ContainsImage())
+                    {
+                        System.Windows.Media.Imaging.BitmapSource data = System.Windows.Clipboard.GetImage();
+                        BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+                        encoder.Frames.Add(BitmapFrame.Create(data));
+                        //encoder.QualityLevel = 100;      
+                        byte[] bit = new byte[0];
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            encoder.Frames.Add(BitmapFrame.Create(data));
+                            encoder.Save(stream);
+                            bit = stream.ToArray(); 
+                            stream.Close();               
+                        }
+                        byte[] dataToByte = bit;
+
+                        byte[] clipboardTypeToByte = new byte[4];
+                        clipboardTypeToByte = Encoding.Unicode.GetBytes("i");
+                        int sent = clipboardSocket.Send(clipboardTypeToByte);
+
+                        int dataSize = dataToByte.Length;
+                        byte[] dataSizeToByte = new byte[4];
+                        dataSizeToByte = BitConverter.GetBytes(dataSize);
+                        sent = clipboardSocket.Send(dataSizeToByte);
+
+                        int total = 0;
+                        int dataLeft = dataSize;
+
+                        while (total < dataSize)
+                        {
+                            sent = clipboardSocket.Send(dataToByte, total, dataLeft, SocketFlags.None);
+                            total += sent;
+                            dataLeft -= sent;
+                        }
                     }
 
                 }
@@ -86,11 +124,42 @@ namespace Utils.ClipboardSend
                         }
 
                         String clipboardContentToString = Encoding.Unicode.GetString(clipboardContent, 0, total);
-                        MessageBox.Show("Received clipboard content:" + clipboardContentToString +"|||");
-
+                        System.Windows.Clipboard.SetText(clipboardContentToString);
                     }
 
-                    ReceiveClipboard();
+                    if (clipboardType.CompareTo("i") == 0)
+                    {
+                        byte[] clipboardSizeToByte = new byte[4];
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
+
+                        int total = 0;
+                        int recv;
+                        int dataleft = clipboardSize;
+                        byte[] clipboardContent = new byte[clipboardSize];
+                        while (total < clipboardSize)
+                        {
+                            recv = clipboardSocket.Receive(clipboardContent, total, dataleft, SocketFlags.None);
+                            if (recv == 0)
+                            {
+                                clipboardContent = null;
+                                break;
+                            }
+                            total += recv;
+                            dataleft -= recv;
+                        }
+
+                        var stream = new MemoryStream(clipboardContent);
+                        var image = new BitmapImage();
+                        image.BeginInit();
+                        image.StreamSource = stream;
+                        image.EndInit();
+
+
+                        System.Windows.Clipboard.SetImage(image);
+                    }
+
+                    ReceiveClipboard();  //TODO
 
                 }
             }
