@@ -421,8 +421,14 @@ namespace RemoteControllerServer
                 receiveKeyboard.Close();
                 receiveKeyboard.Dispose();
 
+                receiveClipboard.Shutdown(SocketShutdown.Both);
+                receiveClipboard.Disconnect(true);
+                receiveClipboard.Close();
+                receiveClipboard.Dispose();
+
                 mouseSocket.Shutdown(SocketShutdown.Both);
                 mouseSocket.Close();
+
                 this.Dispatcher.Invoke((Action)(() =>
                 {
                     tbConnectionStatus.Text = "Connection Close.";

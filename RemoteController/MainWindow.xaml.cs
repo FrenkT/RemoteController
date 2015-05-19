@@ -370,6 +370,7 @@ namespace RemoteController
             {
                 controlSocket.Close();
                 keyboardSocket.Close();
+                clipboardSocket.Close();
                 mouseSocket.Close();
                 
                 Disconnect_Button.IsEnabled = false;
