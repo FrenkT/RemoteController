@@ -25,7 +25,13 @@ namespace RemoteControllerServer
 
     public partial class MainWindow : Window
     {
-        System.Windows.Forms.NotifyIcon ni;
+        private System.Windows.Forms.NotifyIcon ni;
+        private System.Windows.Forms.ContextMenu contextMenu1;
+        private System.Windows.Forms.MenuItem menuItem1;
+        private System.Windows.Forms.MenuItem menuItem2;
+        private System.ComponentModel.IContainer components;
+
+
         Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         Socket receiveControl, receiveKeyboard, receiveClipboard;
 
@@ -39,25 +45,59 @@ namespace RemoteControllerServer
         public MainWindow()
         {
             InitializeComponent();
+
+            // Create the notifyIcon
             ni = new System.Windows.Forms.NotifyIcon();
 
             var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
 
+            // The Icon property sets the icon that will appear 
+            // in the systray for this application
             ni.Icon = new System.Drawing.Icon(logoimage);
+            
+            this.components = new System.ComponentModel.Container();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenu();
+            this.menuItem1 = new System.Windows.Forms.MenuItem();
+            this.menuItem2 = new System.Windows.Forms.MenuItem();
+
+            // Initialize contextMenu1 
+            this.contextMenu1.MenuItems.AddRange(
+                        new System.Windows.Forms.MenuItem[] { 
+                            this.menuItem1,
+                            this.menuItem2});
+
+            // Initialize menuItem1 
+            this.menuItem1.Index = 0;
+            this.menuItem1.Text = "Exit";
+            this.menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
+
+            // Initialize menuItem1 
+            this.menuItem2.Index = 0;
+            this.menuItem2.Text = "Show Settings";
+            this.menuItem2.Click += new System.EventHandler(this.menuItem1_Click);
+
+            // Set up how the form should be displayed. 
+            //this.ClientSize = new System.Drawing.Size(292, 266);
+            //this.Text = "Notify Icon Example";
+
+            // The ContextMenu property sets the menu that will 
+            // appear when the systray icon is right clicked.
+            ni.ContextMenu = this.contextMenu1;
+
+            // The Text property sets the text that will be displayed, 
+            // in a tooltip, when the mouse hovers over the systray icon.
+            ni.Text = "Remote Controller";
             ni.Visible = true;
-            ni.DoubleClick +=
-                delegate(object sender, EventArgs args)
-                {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                };
+
+            // Handle the DoubleClick event to activate the form.
+            ni.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
             
             Start_Button.IsEnabled = true;
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = false;
         }
-        
+        /* 
         protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState == WindowState.Minimized)
@@ -68,7 +108,7 @@ namespace RemoteControllerServer
             }
             base.OnStateChanged(e);
         }
-
+        */
         private void Start_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
@@ -218,6 +258,7 @@ namespace RemoteControllerServer
             mouseSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
 
         }
+
         public void AcceptCallback(IAsyncResult ar)
         {
             Socket listener = null;
@@ -512,6 +553,34 @@ namespace RemoteControllerServer
             }
                 
                 
+        }
+        /*
+        protected override void Dispose(bool disposing)
+        {
+            // Clean up any components being used. 
+            if (disposing)
+                if (components != null)
+                    components.Dispose();
+           
+            //base.Dispose(disposing);
+        }
+        */
+        private void notifyIcon1_DoubleClick(object Sender, EventArgs e)
+        {
+            // Show the form when the user double clicks on the notify icon. 
+
+            // Set the WindowState to normal if the form is minimized. 
+            if (this.WindowState == WindowState.Minimized)
+                this.WindowState = WindowState.Normal;
+
+            // Activate the form. 
+            this.Activate();
+        }
+
+        private void menuItem1_Click(object Sender, EventArgs e)
+        {
+            // Close the form, which closes the application. 
+            this.Close();
         }
     }
 }

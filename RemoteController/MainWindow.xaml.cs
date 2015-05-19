@@ -370,6 +370,8 @@ namespace RemoteController
             {
                 controlSocket.Close();
                 keyboardSocket.Close();
+                clipboardSocket.Shutdown(SocketShutdown.Both);
+                clipboardSocket.Disconnect(true);
                 clipboardSocket.Close();
                 mouseSocket.Close();
                 
