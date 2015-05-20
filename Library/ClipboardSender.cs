@@ -269,6 +269,8 @@ namespace Utils.ClipboardSend
                         bytesReceived = clipboardSocket.Receive(dropListSizeToByte);
                         int dropListSize = BitConverter.ToInt32(dropListSizeToByte, 0);
 
+                        System.Collections.Specialized.StringCollection dropList = new System.Collections.Specialized.StringCollection();
+
                         for (int i = 0; i < dropListSize; i++)
                         {
                             byte[] fileNameSizeToByte = new byte[4];
@@ -310,8 +312,12 @@ namespace Utils.ClipboardSend
                                 total += recv;
                                 dataleft -= recv;
                             }
-                            File.WriteAllBytes("C:/tmp/" + fileNameToString, fileContent); 
+                            string path = Path.GetTempPath() + fileNameToString;
+                            File.WriteAllBytes(path, fileContent);
+                            dropList.Add(path);
                         }
+
+                        System.Windows.Clipboard.SetFileDropList(dropList);
                     }
 
                     ReceiveClipboard();  //TODO
