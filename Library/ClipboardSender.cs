@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Drawing;
+using System.Collections;
 
 namespace Utils.ClipboardSend
 {
@@ -56,7 +57,6 @@ namespace Utils.ClipboardSend
                         System.Windows.Media.Imaging.BitmapSource data = System.Windows.Clipboard.GetImage();
                         BmpBitmapEncoder encoder = new BmpBitmapEncoder();
                         encoder.Frames.Add(BitmapFrame.Create(data));
-                        //encoder.QualityLevel = 100;      
                         byte[] bit = new byte[0];
                         using (MemoryStream stream = new MemoryStream())
                         {
@@ -114,6 +114,39 @@ namespace Utils.ClipboardSend
                             sent = clipboardSocket.Send(dataToByte, total, dataLeft, SocketFlags.None);
                             total += sent;
                             dataLeft -= sent;
+                        }
+                    }
+
+                    if (System.Windows.Clipboard.ContainsFileDropList())
+                    {
+                        byte[] clipboardTypeToByte = new byte[4];
+                        clipboardTypeToByte = Encoding.Unicode.GetBytes("d");
+                        int sent = clipboardSocket.Send(clipboardTypeToByte);
+
+                        System.Collections.Specialized.StringCollection dropList = System.Windows.Clipboard.GetFileDropList();
+                        foreach (string path in dropList)
+                        {
+                            FileInfo fileInfo = new FileInfo(path);
+                            string fileName = fileInfo.Name;
+                            byte[] fileContentToByte = File.ReadAllBytes(path);
+                            int fileSize = fileContentToByte.Length;
+
+                            byte[] fileNameToByte = new byte[1024];
+                            fileNameToByte = Encoding.Unicode.GetBytes(fileName);
+                            sent = clipboardSocket.Send(fileNameToByte);
+
+                            byte[] fileSizeToByte = new byte[4];
+                            fileSizeToByte = BitConverter.GetBytes(fileSize);
+                            sent = clipboardSocket.Send(fileSizeToByte);
+
+                            int total = 0;
+                            int dataLeft = fileSize;
+                            while (total < fileSize)
+                            {
+                                sent = clipboardSocket.Send(fileContentToByte, total, dataLeft, SocketFlags.None);
+                                total += sent;
+                                dataLeft -= sent;
+                            }
                         }
                     }
 
@@ -212,6 +245,33 @@ namespace Utils.ClipboardSend
                         System.Windows.Clipboard.SetAudio(clipboardContent);
                     }
 
+                    if (clipboardType.CompareTo("d") == 0)
+                    {
+                        byte[] fileNameToByte = new byte[1024];
+                        bytesReceived = clipboardSocket.Receive(fileNameToByte);
+                        string fileName = Encoding.Unicode.GetString(fileNameToByte, 0, 1024);
+
+                        byte[] fileSizeToByte = new byte[4];
+                        bytesReceived = clipboardSocket.Receive(fileSizeToByte);
+                        int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
+
+                        int total = 0;
+                        int recv;
+                        int dataleft = fileSize;
+                        byte[] fileContent = new byte[fileSize];
+                        while (total < fileSize)
+                        {
+                            recv = clipboardSocket.Receive(fileContent, total, dataleft, SocketFlags.None);
+                            if (recv == 0)
+                            {
+                                fileContent = null;
+                                break;
+                            }
+                            total += recv;
+                            dataleft -= recv;
+                        }
+                        File.WriteAllBytes("C:/tmp/" + fileName, fileContent);
+                    }
 
                     ReceiveClipboard();  //TODO
 
