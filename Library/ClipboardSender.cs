@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Drawing;
 using System.Collections;
+using System.IO.Compression;
 
 namespace Utils.ClipboardSend
 {
@@ -133,37 +134,90 @@ namespace Utils.ClipboardSend
 
                         foreach (string path in dropList)
                         {
-                            FileInfo fileInfo = new FileInfo(path);
-                            string fileName = fileInfo.Name;
-                            byte[] fileContentToByte = File.ReadAllBytes(path);
-                            int fileSize = fileContentToByte.Length;
-
-                            byte[] fileNameToByte = Encoding.Unicode.GetBytes(fileName);
-                            int fileNameSize = fileNameToByte.Length;
-                            byte[] fileNameSizeToByte = new byte[4];
-                            fileNameSizeToByte = BitConverter.GetBytes(fileNameSize);
-                            sent = clipboardSocket.Send(fileNameSizeToByte);
-
-                            int total = 0;
-                            int dataLeft = fileNameSize;
-                            while (total < fileNameSize)
+                            FileAttributes elementType = File.GetAttributes(path);
+                            if (elementType.HasFlag(FileAttributes.Directory))
                             {
-                                sent = clipboardSocket.Send(fileNameToByte, total, dataLeft, SocketFlags.None);
-                                total += sent;
-                                dataLeft -= sent;
+                                //Transfer a zipped directory
+                                byte[] elementTypeToByte = new byte[4];
+                                elementTypeToByte = Encoding.Unicode.GetBytes("d");
+                                sent = clipboardSocket.Send(elementTypeToByte);
+
+                                ZipFile.CreateFromDirectory(path, path+".zip");
+                                string zipPath = path + ".zip";
+
+                                FileInfo fileInfo = new FileInfo(zipPath);
+                                string fileName = fileInfo.Name;
+                                byte[] fileContentToByte = File.ReadAllBytes(zipPath);
+                                int fileSize = fileContentToByte.Length;
+
+                                byte[] fileNameToByte = Encoding.Unicode.GetBytes(fileName);
+                                int fileNameSize = fileNameToByte.Length;
+                                byte[] fileNameSizeToByte = new byte[4];
+                                fileNameSizeToByte = BitConverter.GetBytes(fileNameSize);
+                                sent = clipboardSocket.Send(fileNameSizeToByte);
+
+                                int total = 0;
+                                int dataLeft = fileNameSize;
+                                while (total < fileNameSize)
+                                {
+                                    sent = clipboardSocket.Send(fileNameToByte, total, dataLeft, SocketFlags.None);
+                                    total += sent;
+                                    dataLeft -= sent;
+                                }
+
+                                byte[] fileSizeToByte = new byte[4];
+                                fileSizeToByte = BitConverter.GetBytes(fileSize);
+                                sent = clipboardSocket.Send(fileSizeToByte);
+
+                                total = 0;
+                                dataLeft = fileSize;
+                                while (total < fileSize)
+                                {
+                                    sent = clipboardSocket.Send(fileContentToByte, total, dataLeft, SocketFlags.None);
+                                    total += sent;
+                                    dataLeft -= sent;
+                                }
+                                File.Delete(zipPath);
                             }
+                            else
+                            {   
+                                //Transfer a file
+                                byte[] elementTypeToByte = new byte[4];
+                                elementTypeToByte = Encoding.Unicode.GetBytes("f");
+                                sent = clipboardSocket.Send(elementTypeToByte);
 
-                            byte[] fileSizeToByte = new byte[4];
-                            fileSizeToByte = BitConverter.GetBytes(fileSize);
-                            sent = clipboardSocket.Send(fileSizeToByte);
+                                FileInfo fileInfo = new FileInfo(path);
+                                string fileName = fileInfo.Name;
+                                byte[] fileContentToByte = File.ReadAllBytes(path);
+                                int fileSize = fileContentToByte.Length;
 
-                            total = 0;
-                            dataLeft = fileSize;
-                            while (total < fileSize)
-                            {
-                                sent = clipboardSocket.Send(fileContentToByte, total, dataLeft, SocketFlags.None);
-                                total += sent;
-                                dataLeft -= sent;
+                                byte[] fileNameToByte = Encoding.Unicode.GetBytes(fileName);
+                                int fileNameSize = fileNameToByte.Length;
+                                byte[] fileNameSizeToByte = new byte[4];
+                                fileNameSizeToByte = BitConverter.GetBytes(fileNameSize);
+                                sent = clipboardSocket.Send(fileNameSizeToByte);
+
+                                int total = 0;
+                                int dataLeft = fileNameSize;
+                                while (total < fileNameSize)
+                                {
+                                    sent = clipboardSocket.Send(fileNameToByte, total, dataLeft, SocketFlags.None);
+                                    total += sent;
+                                    dataLeft -= sent;
+                                }
+
+                                byte[] fileSizeToByte = new byte[4];
+                                fileSizeToByte = BitConverter.GetBytes(fileSize);
+                                sent = clipboardSocket.Send(fileSizeToByte);
+
+                                total = 0;
+                                dataLeft = fileSize;
+                                while (total < fileSize)
+                                {
+                                    sent = clipboardSocket.Send(fileContentToByte, total, dataLeft, SocketFlags.None);
+                                    total += sent;
+                                    dataLeft -= sent;
+                                }
                             }
                         }
                     }
@@ -273,48 +327,105 @@ namespace Utils.ClipboardSend
 
                         for (int i = 0; i < dropListSize; i++)
                         {
-                            byte[] fileNameSizeToByte = new byte[4];
-                            bytesReceived = clipboardSocket.Receive(fileNameSizeToByte);
-                            int fileNameSize = BitConverter.ToInt32(fileNameSizeToByte, 0);
+                            byte[] elementTypeToByte = new byte[4];
+                            bytesReceived = clipboardSocket.Receive(elementTypeToByte);
+                            String elementType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
 
-                            int total = 0;
-                            int recv;
-                            int dataleft = fileNameSize;
-                            byte[] fileName = new byte[fileNameSize];
-                            while (total < fileNameSize)
+                            if (elementType.CompareTo("f") == 0)
                             {
-                                recv = clipboardSocket.Receive(fileName, total, dataleft, SocketFlags.None);
-                                if (recv == 0)
+                                //Receive a file
+                                byte[] fileNameSizeToByte = new byte[4];
+                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte);
+                                int fileNameSize = BitConverter.ToInt32(fileNameSizeToByte, 0);
+
+                                int total = 0;
+                                int recv;
+                                int dataleft = fileNameSize;
+                                byte[] fileName = new byte[fileNameSize];
+                                while (total < fileNameSize)
                                 {
-                                    fileName = null;
-                                    break;
+                                    recv = clipboardSocket.Receive(fileName, total, dataleft, SocketFlags.None);
+                                    if (recv == 0)
+                                    {
+                                        fileName = null;
+                                        break;
+                                    }
+                                    total += recv;
+                                    dataleft -= recv;
                                 }
-                                total += recv;
-                                dataleft -= recv;
+                                string fileNameToString = Encoding.Unicode.GetString(fileName, 0, total);
+
+                                byte[] fileSizeToByte = new byte[4];
+                                bytesReceived = clipboardSocket.Receive(fileSizeToByte);
+                                int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
+
+                                total = 0;
+                                dataleft = fileSize;
+                                byte[] fileContent = new byte[fileSize];
+                                while (total < fileSize)
+                                {
+                                    recv = clipboardSocket.Receive(fileContent, total, dataleft, SocketFlags.None);
+                                    if (recv == 0)
+                                    {
+                                        fileContent = null;
+                                        break;
+                                    }
+                                    total += recv;
+                                    dataleft -= recv;
+                                }
+                                string path = Path.GetTempPath() + fileNameToString;
+                                File.WriteAllBytes(path, fileContent);
+                                dropList.Add(path); 
                             }
-                            string fileNameToString = Encoding.Unicode.GetString(fileName, 0, total);
 
-                            byte[] fileSizeToByte = new byte[4];
-                            bytesReceived = clipboardSocket.Receive(fileSizeToByte);
-                            int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
-
-                            total = 0;
-                            dataleft = fileSize;
-                            byte[] fileContent = new byte[fileSize];
-                            while (total < fileSize)
+                            if (elementType.CompareTo("d") == 0)
                             {
-                                recv = clipboardSocket.Receive(fileContent, total, dataleft, SocketFlags.None);
-                                if (recv == 0)
+                                //Receive a zipped directory
+                                byte[] fileNameSizeToByte = new byte[4];
+                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte);
+                                int fileNameSize = BitConverter.ToInt32(fileNameSizeToByte, 0);
+
+                                int total = 0;
+                                int recv;
+                                int dataleft = fileNameSize;
+                                byte[] fileName = new byte[fileNameSize];
+                                while (total < fileNameSize)
                                 {
-                                    fileContent = null;
-                                    break;
+                                    recv = clipboardSocket.Receive(fileName, total, dataleft, SocketFlags.None);
+                                    if (recv == 0)
+                                    {
+                                        fileName = null;
+                                        break;
+                                    }
+                                    total += recv;
+                                    dataleft -= recv;
                                 }
-                                total += recv;
-                                dataleft -= recv;
+                                string fileNameToString = Encoding.Unicode.GetString(fileName, 0, total);
+
+                                byte[] fileSizeToByte = new byte[4];
+                                bytesReceived = clipboardSocket.Receive(fileSizeToByte);
+                                int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
+
+                                total = 0;
+                                dataleft = fileSize;
+                                byte[] fileContent = new byte[fileSize];
+                                while (total < fileSize)
+                                {
+                                    recv = clipboardSocket.Receive(fileContent, total, dataleft, SocketFlags.None);
+                                    if (recv == 0)
+                                    {
+                                        fileContent = null;
+                                        break;
+                                    }
+                                    total += recv;
+                                    dataleft -= recv;
+                                }
+                                string path = Path.GetTempPath() + fileNameToString;
+                                File.WriteAllBytes(path, fileContent);
+                                ZipFile.ExtractToDirectory(path, Path.GetTempPath());
+                                
+                                dropList.Add(path); 
                             }
-                            string path = Path.GetTempPath() + fileNameToString;
-                            File.WriteAllBytes(path, fileContent);
-                            dropList.Add(path);
                         }
 
                         System.Windows.Clipboard.SetFileDropList(dropList);
