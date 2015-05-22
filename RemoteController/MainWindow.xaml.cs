@@ -82,7 +82,7 @@ namespace RemoteController
                 MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
                 MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
 
-                Thread t = new Thread(() => { while (true) { CSender.ReceiveClipboard(); } });
+                Thread t = new Thread(() => CSender.ReceiveClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
                 connected = true;

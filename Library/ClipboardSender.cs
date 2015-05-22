@@ -230,7 +230,7 @@ namespace Utils.ClipboardSend
         {
             if (clipboardSocket != null)
             {
-                if (clipboardSocket.Connected)
+                while (clipboardSocket.Connected)
                 {
                     byte[] clipboardTypeToByte = new byte[2];
                     int bytesReceived = clipboardSocket.Receive(clipboardTypeToByte);
