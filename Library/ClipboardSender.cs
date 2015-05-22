@@ -329,7 +329,7 @@ namespace Utils.ClipboardSend
                         {
                             byte[] elementTypeToByte = new byte[2];
                             bytesReceived = clipboardSocket.Receive(elementTypeToByte);
-                            String elementType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
+                            String elementType = Encoding.Unicode.GetString(elementTypeToByte, 0, bytesReceived);
 
                             if (elementType.CompareTo("f") == 0)
                             {
@@ -423,7 +423,11 @@ namespace Utils.ClipboardSend
                                 string path = Path.GetTempPath() + fileNameToString;
                                 File.WriteAllBytes(path, fileContent);
                                 string folderPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(path);
-                                ZipFile.ExtractToDirectory(path, folderPath);
+                                try
+                                {
+                                    ZipFile.ExtractToDirectory(path, folderPath);
+                                }
+                                catch (IOException) { }
                                 
                                 dropList.Add(folderPath); 
                             }
