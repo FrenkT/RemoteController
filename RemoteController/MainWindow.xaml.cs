@@ -39,6 +39,7 @@ namespace RemoteController
         KeyboardListener KListener;
         MouseListener MListener;
         ClipboardSender CSender;
+        bool connected = false;
 
         public MainWindow()
         {
@@ -84,6 +85,7 @@ namespace RemoteController
                 Thread t = new Thread(() => { while (true) { CSender.ReceiveClipboard(); } });
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
+                connected = true;
             }
             else if (pwdAccepted == 0)
             {
@@ -182,6 +184,7 @@ namespace RemoteController
                             }));
                             KListener.Dispose();
                             MListener.Dispose();
+                            connected = false;
                         }
                         catch (Exception exc) { MessageBox.Show(exc.ToString()); }
                     }
@@ -383,6 +386,7 @@ namespace RemoteController
 
                 KListener.Dispose();
                 MListener.Dispose();
+                connected = false;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
@@ -612,5 +616,34 @@ namespace RemoteController
                 } 
             }
         }
+
+        private void Activate_Control(object sender, EventArgs e)
+        {
+            if (connected)
+            {
+                KListener = new KeyboardListener();
+                MListener = new MouseListener();
+                KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+                KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
+                MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
+                MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
+                MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
+                MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
+                MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
+                MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+            }
+        }
+
+        private void Deactivate_Control(object sender, EventArgs e)
+        {
+            try
+            {
+                KListener.Dispose();
+                MListener.Dispose();
+            }
+            catch (NullReferenceException) { }
+        }
+
+        
     }
 }
