@@ -120,7 +120,7 @@ namespace Utils.ClipboardSend
 
                     if (System.Windows.Clipboard.ContainsFileDropList())
                     {
-                        byte[] clipboardTypeToByte = new byte[4];
+                        byte[] clipboardTypeToByte = new byte[2];
                         clipboardTypeToByte = Encoding.Unicode.GetBytes("d");
                         int sent = clipboardSocket.Send(clipboardTypeToByte);
 
@@ -138,8 +138,8 @@ namespace Utils.ClipboardSend
                             if (elementType.HasFlag(FileAttributes.Directory))
                             {
                                 //Transfer a zipped directory
-                                byte[] elementTypeToByte = new byte[4];
-                                elementTypeToByte = Encoding.Unicode.GetBytes("d");
+                                byte[] elementTypeToByte = new byte[2];
+                                elementTypeToByte = Encoding.Unicode.GetBytes("z");
                                 sent = clipboardSocket.Send(elementTypeToByte);
 
                                 ZipFile.CreateFromDirectory(path, path+".zip");
@@ -182,7 +182,7 @@ namespace Utils.ClipboardSend
                             else
                             {   
                                 //Transfer a file
-                                byte[] elementTypeToByte = new byte[4];
+                                byte[] elementTypeToByte = new byte[2];
                                 elementTypeToByte = Encoding.Unicode.GetBytes("f");
                                 sent = clipboardSocket.Send(elementTypeToByte);
 
@@ -232,7 +232,7 @@ namespace Utils.ClipboardSend
             {
                 if (clipboardSocket.Connected)
                 {
-                    byte[] clipboardTypeToByte = new byte[4];
+                    byte[] clipboardTypeToByte = new byte[2];
                     int bytesReceived = clipboardSocket.Receive(clipboardTypeToByte);
                     String clipboardType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
 
@@ -327,7 +327,7 @@ namespace Utils.ClipboardSend
 
                         for (int i = 0; i < dropListSize; i++)
                         {
-                            byte[] elementTypeToByte = new byte[4];
+                            byte[] elementTypeToByte = new byte[2];
                             bytesReceived = clipboardSocket.Receive(elementTypeToByte);
                             String elementType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
 
@@ -378,7 +378,7 @@ namespace Utils.ClipboardSend
                                 dropList.Add(path); 
                             }
 
-                            if (elementType.CompareTo("d") == 0)
+                            if (elementType.CompareTo("z") == 0)
                             {
                                 //Receive a zipped directory
                                 byte[] fileNameSizeToByte = new byte[4];
@@ -432,7 +432,7 @@ namespace Utils.ClipboardSend
                         System.Windows.Clipboard.SetFileDropList(dropList);
                     }
 
-                    ReceiveClipboard();  //TODO
+                    //ReceiveClipboard();  //TODO
 
                 }
             }
