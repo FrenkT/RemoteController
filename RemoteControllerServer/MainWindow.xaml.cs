@@ -75,7 +75,7 @@ namespace RemoteControllerServer
             // Initialize menuItem1 
             this.menuItem2.Index = 0;
             this.menuItem2.Text = "Show Settings";
-            this.menuItem2.Click += new System.EventHandler(this.menuItem1_Click);
+            this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
 
             // Set up how the form should be displayed. 
             //this.ClientSize = new System.Drawing.Size(292, 266);
@@ -554,6 +554,7 @@ namespace RemoteControllerServer
                 
                 
         }
+
         /*
         protected override void Dispose(bool disposing)
         {
@@ -565,6 +566,7 @@ namespace RemoteControllerServer
             //base.Dispose(disposing);
         }
         */
+
         private void notifyIcon1_DoubleClick(object Sender, EventArgs e)
         {
             // Show the form when the user double clicks on the notify icon. 
@@ -581,6 +583,15 @@ namespace RemoteControllerServer
         {
             // Close the form, which closes the application. 
             this.Close();
+        }
+
+        private void menuItem2_Click(object Sender, EventArgs e)
+        {
+            // Close the form, which closes the application. 
+            Window2 new_window = new Window2();
+
+            new_window.Show();
+            new_window.Owner = this;
         }
     }
 }
