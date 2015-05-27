@@ -19,27 +19,30 @@ namespace RemoteControllerServer
         public Socket workSocket = null;
         public const int BufferSize = 1024;
         public byte[] buffer = new byte[BufferSize];
-        public StringBuilder sb = new StringBuilder();
     }
 
     public partial class MainWindow : Window
     {
         private System.Windows.Forms.NotifyIcon ni;
         private System.Windows.Forms.ContextMenu contextMenu1;
-        private System.Windows.Forms.MenuItem menuItem1;
-        private System.Windows.Forms.MenuItem menuItem2;
+        private System.Windows.Forms.MenuItem menuItemExit;
+        private System.Windows.Forms.MenuItem menuItemSettings;
         private System.ComponentModel.IContainer components;
+        private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+        private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
+        private string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
+        private string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
 
+        private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
+        private Socket receiveControl, receiveKeyboard, receiveClipboard;
 
-        Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
-        Socket receiveControl, receiveKeyboard, receiveClipboard;
+        private IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
+        private String pass = "";
+        private String locIp = GetIP4Address();
+        private int defaultPort = 4510;
+        private ClipboardListener CListener;
+        private ClipboardSender CSender;
 
-        IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
-        String pass = "";
-        String locIp = GetIP4Address();
-        int port_conn = 4510;
-        ClipboardListener CListener;
-        ClipboardSender CSender;
 
         public MainWindow()
         {
@@ -48,72 +51,68 @@ namespace RemoteControllerServer
             // Create the notifyIcon
             ni = new System.Windows.Forms.NotifyIcon();
 
-            var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
-
-            // The Icon property sets the icon that will appear 
-            // in the systray for this application
-            ni.Icon = new System.Drawing.Icon(logoimage);
+            // The Icon property sets the icon that will appear in the systray for this application
+            ni.Icon = new System.Drawing.Icon(logoImageStart);
             
             this.components = new System.ComponentModel.Container();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
+            this.menuItemExit = new System.Windows.Forms.MenuItem();
+            this.menuItemSettings = new System.Windows.Forms.MenuItem();
 
-            // Initialize contextMenu1 
-            this.contextMenu1.MenuItems.AddRange(
-                        new System.Windows.Forms.MenuItem[] { 
-                            this.menuItem1,
-                            this.menuItem2});
+            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit, this.menuItemSettings});
 
-            // Initialize menuItem1 
-            this.menuItem1.Index = 0;
-            this.menuItem1.Text = "Exit";
-            this.menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
+            this.menuItemExit.Index = 0;
+            this.menuItemExit.Text = "Exit";
+            this.menuItemExit.Click += new System.EventHandler(this.menuItemExitClick);
 
-            // Initialize menuItem1 
-            this.menuItem2.Index = 0;
-            this.menuItem2.Text = "Show Settings";
-            this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
+            this.menuItemSettings.Index = 0;
+            this.menuItemSettings.Text = "Show Settings";
+            this.menuItemSettings.Click += new System.EventHandler(this.menuItemSettingsClick);
             
-            // The ContextMenu property sets the menu that will 
-            // appear when the systray icon is right clicked.
+            // The ContextMenu property sets the menu that will appear when the systray icon is right clicked.
             ni.ContextMenu = this.contextMenu1;
 
-            // The Text property sets the text that will be displayed, 
-            // in a tooltip, when the mouse hovers over the systray icon.
+            // The Text property sets the text that will be displayed, in a tooltip, when the mouse hovers over the systray icon.
             ni.Text = "Remote Controller";
             ni.Visible = true;
 
             // Handle the DoubleClick event to activate the form.
-            ni.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
+            ni.DoubleClick += new System.EventHandler(this.NotifyIcon1DoubleClick);
             
             Start_Button.IsEnabled = true;
-            StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = false;
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
+            try
             {
-                pass = TextBox_ConfigPassword.Password;
-                port_conn = int.Parse(TextBox_ConfigPort.Text);
-                InitControl_Socket();
-                Create_TCPConnection_Keyboard();
-                Create_UDPConnection_Mouse();
-                Create_TCPConnection_Clipboard();
-                
-                Start_Button.IsEnabled = false;
-                StartListen_Button.IsEnabled = true;
-                CListener = new ClipboardListener(this);
-                CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
+                if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
+                {
+                    pass = TextBox_ConfigPassword.Password;
+                    defaultPort = int.Parse(TextBox_ConfigPort.Text);
+                    InitControlSocket();
+                    InitKeyboardSocket();
+                    InitMouseSocket();
+                    InitClipboardSocket();
+
+                    CListener = new ClipboardListener(this);
+                    CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
+                    
+                    controlSocket.Listen(100);  //TODO
+                    tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
+                    
+                    AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
+                    controlSocket.BeginAccept(aCallback, controlSocket);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
-            else
-            {
-                System.Windows.MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            Start_Button.IsEnabled = false;
+            Close_Button.IsEnabled = true;
         }
 
         public static string GetIP4Address()
@@ -131,8 +130,8 @@ namespace RemoteControllerServer
             return IP4Address;
         }
 
-        private void InitControl_Socket() {
-            int locPort = port_conn;
+        private void InitControlSocket() {
+            int locPort = defaultPort;
             try
             {
                 SocketPermission permission = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
@@ -153,8 +152,8 @@ namespace RemoteControllerServer
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }    
         }
        
-        private void Create_TCPConnection_Keyboard() {
-            int locPort = port_conn+10;
+        private void InitKeyboardSocket() {
+            int locPort = defaultPort+10;
             try
             {
                 SocketPermission permissionKb = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
@@ -175,9 +174,9 @@ namespace RemoteControllerServer
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
-        private void Create_TCPConnection_Clipboard()
+        private void InitClipboardSocket()
         {
-            int locPort = port_conn + 30;
+            int locPort = defaultPort + 30;
             try
             {
                 SocketPermission permissionClipboard = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
@@ -198,8 +197,8 @@ namespace RemoteControllerServer
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
-        private void Create_UDPConnection_Mouse() {
-            int locPort = port_conn+20;
+        private void InitMouseSocket() {
+            int locPort = defaultPort+20;
             try
             {
                 SocketPermission permissionM = new SocketPermission(NetworkAccess.Accept, TransportType.Udp, "", SocketPermission.AllPorts);
@@ -214,25 +213,9 @@ namespace RemoteControllerServer
 
                 mouseSocket = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                 mouseSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                //mouseSocket.LingerState = new LingerOption(true, 0);
                 mouseSocket.Bind(ipEndPointM);
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-        }
-
-        private void Listen_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                controlSocket.Listen(100);
-                tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
-                AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                controlSocket.BeginAccept(aCallback, controlSocket);                
-            }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-
-            StartListen_Button.IsEnabled = false;
-            Close_Button.IsEnabled = true;
         }
 
         public void StartListenMouse()
@@ -241,13 +224,11 @@ namespace RemoteControllerServer
             state.workSocket = mouseSocket;
             
             mouseSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
-
         }
 
         public void AcceptCallback(IAsyncResult ar)
         {
             Socket listener = null;
-            
             Socket handler = null;
             try
             {
@@ -261,20 +242,18 @@ namespace RemoteControllerServer
 
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
                 {
-                    //controlSocket = handler;
                     receiveControl = handler;
-                    receiveControl.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                    receiveControl.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackControl), state);
                 }
                 if (endpoint.GetHashCode() == keyboardSocket.LocalEndPoint.GetHashCode())
                 {
                     receiveKeyboard = handler;
-                    receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKB), state);
+                    receiveKeyboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackKeyboard), state);
                 }
                 if (endpoint.GetHashCode() == clipboardSocket.LocalEndPoint.GetHashCode())
                 {
                     receiveClipboard = handler;
                     CSender = new ClipboardSender(receiveClipboard);
-                    //receiveClipboard.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallbackClipboard), state);
                 }
                 
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
@@ -294,7 +273,7 @@ namespace RemoteControllerServer
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
-        public void ReceiveCallbackCONNECTION(IAsyncResult ar)
+        public void ReceiveCallbackControl(IAsyncResult ar)
         {
             try
             {
@@ -313,23 +292,17 @@ namespace RemoteControllerServer
                         if (content.IndexOf("<PasswordCheck>") > -1)
                         {
                             string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
-                            if (Check_Password(str, handler))
+                            if (CheckPassword(str, handler))
                             {
-                                keyboardSocket.Listen(100);
+                                keyboardSocket.Listen(100);  //TODO
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
-                                StartListenMouse();
-                                clipboardSocket.Listen(100);
+                                clipboardSocket.Listen(100);  //TODO
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
+                                StartListenMouse();
 
-                                var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-                                string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
-
-                                // The Icon property sets the icon that will appear 
-                                // in the systray for this application
-                                ni.Icon = new System.Drawing.Icon(logoimage);
-
+                                ni.Icon = new System.Drawing.Icon(logoImageConnected);
 
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
@@ -337,22 +310,22 @@ namespace RemoteControllerServer
                                     tbKeyboardStatus.Text = "Connection Keyboard accepted.";
                                     tbMouseStatus.Text = "Connection Mouse accepted.";
                                 }));
-                                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
                             }
                         }
                         else
                         {
-                            handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackCONNECTION), state);
+                            handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
                         }
                     }
                 }
             }
-            catch (ObjectDisposedException) { }
+            catch (ObjectDisposedException) { } //Need this when the socket are closed, exception not managed since we don't care if we loose some data
             catch (SocketException) { }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
-        public void ReceiveCallbackKB(IAsyncResult ar)
+        public void ReceiveCallbackKeyboard(IAsyncResult ar)
         {
             try
             {
@@ -369,8 +342,8 @@ namespace RemoteControllerServer
                     {
                         content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
 
-                        Parse_KB_Event(content);
-                        handlerKb.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackKB), state);
+                        ParseKBEvent(content);
+                        handlerKb.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackKeyboard), state);
                     }
                 }
             }
@@ -395,17 +368,17 @@ namespace RemoteControllerServer
                     {
                         content += Encoding.Unicode.GetString(state.buffer, 0, bytesRead);
 
-                        Parse_Mouse_Event(content);
+                        ParseMouseEvent(content);
 
                         handlerM.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackMouse), state);
                     }
                 }
             }
-            catch (ObjectDisposedException e) { }
+            catch (ObjectDisposedException) { }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
-        public bool Check_Password(String inputpassword, Socket handler) 
+        public bool CheckPassword(String inputpassword, Socket handler) 
         {
             try
             {
@@ -437,20 +410,13 @@ namespace RemoteControllerServer
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
         
-        private void Close_Click(object sender, RoutedEventArgs e)
+        private void CloseClick(object sender, RoutedEventArgs e)
         {
             try
             {
                 string str = "Disconnect";
-                
-                
-                var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-                string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
 
-                // The Icon property sets the icon that will appear 
-                // in the systray for this application
-                ni.Icon = new System.Drawing.Icon(logoimage);
-
+                ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
 
                 byte[] byteData = Encoding.Unicode.GetBytes(str);
                 receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
@@ -479,23 +445,18 @@ namespace RemoteControllerServer
                     tbKeyboardStatus.Text = "Connection Keyboard Close.";
                     tbMouseStatus.Text = "Connection Mouse Close.";
                 }));
-
-               
-
-
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
             Close_Button.IsEnabled = false;
             Start_Button.IsEnabled = true;
-            StartListen_Button.IsEnabled = true;
         }
 
-        private void Parse_KB_Event(string kbEvent)
+        private void ParseKBEvent(string kbEvent)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                tbKeyboardStatus.Text = "received -> " + kbEvent;
+                tbKeyboardStatus.Text = "keyboard received -> " + kbEvent;
             }));
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
@@ -508,7 +469,7 @@ namespace RemoteControllerServer
             }
         }
        
-        private void Parse_Mouse_Event(string mouseEvent)
+        private void ParseMouseEvent(string mouseEvent)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
@@ -547,43 +508,38 @@ namespace RemoteControllerServer
 
         void CListener_ClipboardChange(object sender, RawClipboardEventArgs args)
         {
-            this.Dispatcher.Invoke((Action)(() =>
-            {
-                tbKeyboardStatus.Text = "NEW CLIPBOARD CONTENT! --> " + args.changed ;
-            }));
-            //System.Windows.MessageBox.Show("ClipChange");
             if (CSender != null) 
             {
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    tbClipboardStatus.Text = "Sending clipboard content to the client " + DateTime.Now.ToString();
+                }));
                 Thread t = new Thread(() => CSender.SendClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
             }
-                
-                
         }
 
-        private void notifyIcon1_DoubleClick(object Sender, EventArgs e)
+        private void NotifyIcon1DoubleClick(object Sender, EventArgs e)
         {
             // Show the form when the user double clicks on the notify icon. 
 
-            // Set the WindowState to normal if the form is minimized. 
             if (this.WindowState == WindowState.Minimized)
                 this.WindowState = WindowState.Normal;
 
-            // Activate the form. 
             this.Activate();
         }
 
-        private void menuItem1_Click(object Sender, EventArgs e)
+        private void menuItemExitClick(object Sender, EventArgs e)
         {
             // Close the form, which closes the application. 
             this.Close();
             ni.Visible = false;
         }
 
-        private void menuItem2_Click(object Sender, EventArgs e)
+        private void menuItemSettingsClick(object Sender, EventArgs e)
         {
-            Window2 new_window = new Window2(pass, locIp, port_conn);
+            Window2 new_window = new Window2(pass, locIp, defaultPort);
 
             new_window.Show();
             new_window.Owner = this;
