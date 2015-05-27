@@ -312,6 +312,22 @@ namespace RemoteControllerServer
                                     tbMouseStatus.Text = "Connection Mouse accepted.";
                                 }));
                                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
+                                
+                                Thread tt = new Thread(() =>
+                                {
+                                    while (true)
+                                    {
+                                        Thread t = new Thread(() => CSender.ReceiveClipboard());
+                                        t.SetApartmentState(ApartmentState.STA);
+                                        t.Start();
+                                        t.Join();
+                                        this.Dispatcher.Invoke((Action)(() =>
+                                        {
+                                            tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
+                                        }));
+                                    }
+                                });
+                                tt.Start();
                             }
                         }
                         else

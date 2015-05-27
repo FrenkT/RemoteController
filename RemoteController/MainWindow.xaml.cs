@@ -564,7 +564,6 @@ namespace RemoteController
                 
                     SendKey("DOWN", args.VKCode);
             }));
-                
         }
 
         void KListener_KeyUp(object sender, RawKeyEventArgs args)
@@ -607,6 +606,9 @@ namespace RemoteController
             if (connected)
             {
                 InitHooks();
+                Thread t = new Thread(() => CSender.SendClipboard());
+                t.SetApartmentState(ApartmentState.STA);
+                t.Start();
             }
         }
 
