@@ -423,12 +423,13 @@ namespace Utils.ClipboardSend
                                 string path = Path.GetTempPath() + fileNameToString;
                                 File.WriteAllBytes(path, fileContent);
                                 string folderPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(path);
-                                try
+
+                                if (Directory.Exists(folderPath))
                                 {
-                                    ZipFile.ExtractToDirectory(path, folderPath);
+                                    Directory.Delete(folderPath, true);
                                 }
-                                catch (IOException) { }
-                                
+                                ZipFile.ExtractToDirectory(path, folderPath);
+
                                 dropList.Add(folderPath); 
                             }
                         }
