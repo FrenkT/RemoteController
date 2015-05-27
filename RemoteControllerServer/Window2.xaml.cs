@@ -19,16 +19,15 @@ namespace RemoteControllerServer
     /// </summary>
     public partial class Window2 : Window
     {
-        public Window2()
+        public Window2(String password, String ip, int n)
         {            
             InitializeComponent();
-
-            //String port = TextBox_ShowPort.Text;
-            //String pwd = TextBox_ShowPwd.Text;
-            //String ipaddress = TextBox_ShowClient.SelectedText;
-            TextBox_ShowPort.Text = "ciao";
-            
-
+            int port = n;
+            String pwd = password;
+            String ipaddress = ip;
+            TextBox_ShowPort.Text = port.ToString();
+            TextBox_ShowPwd.Text = pwd;
+            TextBox_ShowIP.Text = ipaddress;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

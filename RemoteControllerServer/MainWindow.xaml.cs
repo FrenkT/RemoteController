@@ -14,7 +14,6 @@ using Utils.ClipboardSend;
 namespace RemoteControllerServer
 {
     
-    
     public class StateObject
     {
         public Socket workSocket = null;
@@ -76,11 +75,7 @@ namespace RemoteControllerServer
             this.menuItem2.Index = 0;
             this.menuItem2.Text = "Show Settings";
             this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
-
-            // Set up how the form should be displayed. 
-            //this.ClientSize = new System.Drawing.Size(292, 266);
-            //this.Text = "Notify Icon Example";
-
+            
             // The ContextMenu property sets the menu that will 
             // appear when the systray icon is right clicked.
             ni.ContextMenu = this.contextMenu1;
@@ -97,18 +92,7 @@ namespace RemoteControllerServer
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = false;
         }
-        /* 
-        protected override void OnStateChanged(EventArgs e)
-        {
-            if (WindowState == WindowState.Minimized)
-            {
-                this.Hide();
-                ni.ShowBalloonTip(5000, "APP Hidden", "Application has been minimized", ToolTipIcon.Info);
-                
-            }
-            base.OnStateChanged(e);
-        }
-        */
+
         private void Start_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
@@ -246,6 +230,7 @@ namespace RemoteControllerServer
                 controlSocket.BeginAccept(aCallback, controlSocket);                
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+
             StartListen_Button.IsEnabled = false;
             Close_Button.IsEnabled = true;
         }
@@ -337,7 +322,15 @@ namespace RemoteControllerServer
                                 clipboardSocket.Listen(100);
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
-                                
+
+                                var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+                                string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
+
+                                // The Icon property sets the icon that will appear 
+                                // in the systray for this application
+                                ni.Icon = new System.Drawing.Icon(logoimage);
+
+
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
                                     tbConnectionStatus.Text = "Connection accepted.";
@@ -449,6 +442,16 @@ namespace RemoteControllerServer
             try
             {
                 string str = "Disconnect";
+                
+                
+                var outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+                string logoimage = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
+
+                // The Icon property sets the icon that will appear 
+                // in the systray for this application
+                ni.Icon = new System.Drawing.Icon(logoimage);
+
+
                 byte[] byteData = Encoding.Unicode.GetBytes(str);
                 receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
@@ -476,6 +479,10 @@ namespace RemoteControllerServer
                     tbKeyboardStatus.Text = "Connection Keyboard Close.";
                     tbMouseStatus.Text = "Connection Mouse Close.";
                 }));
+
+               
+
+
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
@@ -555,18 +562,6 @@ namespace RemoteControllerServer
                 
         }
 
-        /*
-        protected override void Dispose(bool disposing)
-        {
-            // Clean up any components being used. 
-            if (disposing)
-                if (components != null)
-                    components.Dispose();
-           
-            //base.Dispose(disposing);
-        }
-        */
-
         private void notifyIcon1_DoubleClick(object Sender, EventArgs e)
         {
             // Show the form when the user double clicks on the notify icon. 
@@ -583,15 +578,16 @@ namespace RemoteControllerServer
         {
             // Close the form, which closes the application. 
             this.Close();
+            ni.Visible = false;
         }
 
         private void menuItem2_Click(object Sender, EventArgs e)
         {
-            // Close the form, which closes the application. 
-            Window2 new_window = new Window2();
+            Window2 new_window = new Window2(pass, locIp, port_conn);
 
             new_window.Show();
             new_window.Owner = this;
         }
+
     }
 }
