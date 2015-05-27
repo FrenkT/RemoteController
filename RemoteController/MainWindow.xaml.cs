@@ -26,21 +26,20 @@ namespace RemoteController
         public Socket workSocket = null;
         public const int BufferSize = 1024;
         public byte[] buffer = new byte[BufferSize];
-        public StringBuilder sb = new StringBuilder();
     }
 
     public partial class MainWindow : Window
     {
-        Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
-        String workingServerIp = "";
-        int workingPort = 0;
-        String workingPassword = "";
-        String workingSelection = "";
-        List<Server> serverList = new List<Server>();
-        KeyboardListener KListener;
-        MouseListener MListener;
-        ClipboardSender CSender;
-        bool connected = false;
+        private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
+        private String workingServerIp = "";
+        private int workingPort = 0;
+        private String workingPassword = "";
+        private String workingSelection = "";
+        private List<Server> serverList = new List<Server>();
+        private KeyboardListener KListener;
+        private MouseListener MListener;
+        private ClipboardSender CSender;
+        private bool connected = false;
         public delegate void ReceiveCallbackClipboard();
 
         public MainWindow()
@@ -49,7 +48,7 @@ namespace RemoteController
             Disconnect_Button.IsEnabled = true;
         }
 
-        private void Connect_Click(object sender, RoutedEventArgs e)
+        private void ConnectClick(object sender, RoutedEventArgs e)
         {
             InitControlSocket(workingPort);
 
@@ -67,22 +66,12 @@ namespace RemoteController
                 CSender = new ClipboardSender(clipboardSocket);
                 ListenFromServer();
 
-
                 tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
                 tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
                 tbMouseConnection.Text = "Client connected to " + mouseSocket.RemoteEndPoint.ToString();
                 Connect_Button.IsEnabled = false;
                 Disconnect_Button.IsEnabled = true;
-                KListener = new KeyboardListener();
-                MListener = new MouseListener();
-                KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
-                KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
-                MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
-                MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
-                MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
-                MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
-                MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
-                MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+                InitHooks();
 
                 Thread tt = new Thread(() =>
                 {
@@ -92,6 +81,10 @@ namespace RemoteController
                         t.SetApartmentState(ApartmentState.STA);
                         t.Start();
                         t.Join();
+                        this.Dispatcher.Invoke((Action)(() =>
+                        {
+                            tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
+                        }));
                     }
                 });
                 tt.Start();
@@ -107,6 +100,8 @@ namespace RemoteController
             else
             {
                 MessageBox.Show("Server could not check password, try changing port");
+                Disconnect_Button.IsEnabled = false;
+                Connect_Button.IsEnabled = true;
             }
         }
 
@@ -192,8 +187,7 @@ namespace RemoteController
                                 tbKeyboardConnection.Text = "Not connected";
                                 tbMouseConnection.Text = "Not connected";
                             }));
-                            KListener.Dispose();
-                            MListener.Dispose();
+                            StopHooks();
                             connected = false;
                         }
                         catch (Exception exc) { MessageBox.Show(exc.ToString()); }
@@ -377,7 +371,7 @@ namespace RemoteController
             }
         }
 
-        private void Disconnect_Click(object sender, RoutedEventArgs e)
+        private void DisconnectClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -394,14 +388,13 @@ namespace RemoteController
                 tbKeyboardConnection.Text = "Not connected";
                 tbMouseConnection.Text = "Not connected";
 
-                KListener.Dispose();
-                MListener.Dispose();
+                StopHooks();
                 connected = false;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
-        private void Add_Item_Click(object sender, RoutedEventArgs e)
+        private void AddItemClick(object sender, RoutedEventArgs e)
         {
             String serverName = TextBox_AddName.Text;
             String ipAddress = TextBox_AddIp.Text;
@@ -432,7 +425,7 @@ namespace RemoteController
 
         }
 
-        private void Delete_Item_Click(object sender, RoutedEventArgs e)
+        private void DeleteItemClick(object sender, RoutedEventArgs e)
         {
             String selectedServer = listBoxServers.SelectedItem.ToString();
             foreach (Server s in serverList)
@@ -446,7 +439,7 @@ namespace RemoteController
             }
         }
 
-        private void Select_Item(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SelectItem(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (listBoxServers.SelectedItem != null)
             {
@@ -473,9 +466,9 @@ namespace RemoteController
 
         }
 
-        private void LoadList_Item(object sender, RoutedEventArgs e){ }
+        private void LoadListItem(object sender, RoutedEventArgs e){ }
 
-        private void Edit_Item_Click(object sender, RoutedEventArgs e)
+        private void EditItemClick(object sender, RoutedEventArgs e)
         {
             string ricerca = listBoxServers.SelectedItem.ToString();
 
@@ -501,18 +494,6 @@ namespace RemoteController
             TextBox_AddPassword.Clear();
             TextBox_AddPort.Clear();
 
-        }
-
-        private void Application_Startup(object sender, RoutedEventArgs e)
-        {
-            /*KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
-            KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
-            MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
-            MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
-            MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
-            MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
-            MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
-            MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);*/
         }
 
         void MListener_LeftDown(object sender, RawMouseEventArgs args)
@@ -595,12 +576,6 @@ namespace RemoteController
             }));
         }
 
-        private void Application_Exit(object sender, EventArgs e)
-        {
-            //KListener.Dispose();
-            //MListener.Dispose();
-        }
-
         private void SendKey(string pressType, int VKCode)
         {
             if (keyboardSocket != null)
@@ -627,24 +602,34 @@ namespace RemoteController
             }
         }
 
-        private void Activate_Control(object sender, EventArgs e)
+        private void ActivateControl(object sender, EventArgs e)
         {
             if (connected)
             {
-                KListener = new KeyboardListener();
-                MListener = new MouseListener();
-                KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
-                KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
-                MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
-                MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
-                MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
-                MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
-                MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
-                MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+                InitHooks();
             }
         }
 
-        private void Deactivate_Control(object sender, EventArgs e)
+        private void DeactivateControl(object sender, EventArgs e)
+        {
+            StopHooks();
+        }
+
+        private void InitHooks()
+        {
+            KListener = new KeyboardListener();
+            MListener = new MouseListener();
+            KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
+            KListener.KeyUp += new RawKeyEventHandler(KListener_KeyUp);
+            MListener.LeftDown += new RawMouseEventHandler(MListener_LeftDown);
+            MListener.LeftUp += new RawMouseEventHandler(MListener_LeftUp);
+            MListener.RightDown += new RawMouseEventHandler(MListener_RightDown);
+            MListener.RightUp += new RawMouseEventHandler(MListener_RightUp);
+            MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
+            MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
+        }
+
+        private void StopHooks()
         {
             try
             {
@@ -653,7 +638,5 @@ namespace RemoteController
             }
             catch (NullReferenceException) { }
         }
-
-        
     }
 }
