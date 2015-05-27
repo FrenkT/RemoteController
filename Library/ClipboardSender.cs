@@ -230,16 +230,16 @@ namespace Utils.ClipboardSend
         {
             if (clipboardSocket != null)
             {
-                while (clipboardSocket.Connected)
+                if (clipboardSocket.Connected)
                 {
                     byte[] clipboardTypeToByte = new byte[2];
-                    int bytesReceived = clipboardSocket.Receive(clipboardTypeToByte);
+                    int bytesReceived = clipboardSocket.Receive(clipboardTypeToByte, 2, SocketFlags.None);
                     String clipboardType = Encoding.Unicode.GetString(clipboardTypeToByte, 0, bytesReceived);
 
                     if (clipboardType.CompareTo("t") == 0)
                     {
                         byte[] clipboardSizeToByte = new byte[4];
-                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte, 4, SocketFlags.None);
                         int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
 
                         int total = 0;
@@ -265,7 +265,7 @@ namespace Utils.ClipboardSend
                     if (clipboardType.CompareTo("i") == 0)
                     {
                         byte[] clipboardSizeToByte = new byte[4];
-                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte, 4, SocketFlags.None);
                         int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
 
                         int total = 0;
@@ -296,7 +296,7 @@ namespace Utils.ClipboardSend
                     if (clipboardType.CompareTo("a") == 0)
                     {
                         byte[] clipboardSizeToByte = new byte[4];
-                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte);
+                        bytesReceived = clipboardSocket.Receive(clipboardSizeToByte, 4, SocketFlags.None);
                         int clipboardSize = BitConverter.ToInt32(clipboardSizeToByte, 0);
 
                         int total = 0;
@@ -320,7 +320,7 @@ namespace Utils.ClipboardSend
                     if (clipboardType.CompareTo("d") == 0)
                     {
                         byte[] dropListSizeToByte = new byte[4];
-                        bytesReceived = clipboardSocket.Receive(dropListSizeToByte);
+                        bytesReceived = clipboardSocket.Receive(dropListSizeToByte, 4, SocketFlags.None);
                         int dropListSize = BitConverter.ToInt32(dropListSizeToByte, 0);
 
                         System.Collections.Specialized.StringCollection dropList = new System.Collections.Specialized.StringCollection();
@@ -328,14 +328,14 @@ namespace Utils.ClipboardSend
                         for (int i = 0; i < dropListSize; i++)
                         {
                             byte[] elementTypeToByte = new byte[2];
-                            bytesReceived = clipboardSocket.Receive(elementTypeToByte);
+                            bytesReceived = clipboardSocket.Receive(elementTypeToByte, 2, SocketFlags.None);
                             String elementType = Encoding.Unicode.GetString(elementTypeToByte, 0, bytesReceived);
 
                             if (elementType.CompareTo("f") == 0)
                             {
                                 //Receive a file
                                 byte[] fileNameSizeToByte = new byte[4];
-                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte);
+                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte, 4, SocketFlags.None);
                                 int fileNameSize = BitConverter.ToInt32(fileNameSizeToByte, 0);
 
                                 int total = 0;
@@ -356,7 +356,7 @@ namespace Utils.ClipboardSend
                                 string fileNameToString = Encoding.Unicode.GetString(fileName, 0, total);
 
                                 byte[] fileSizeToByte = new byte[4];
-                                bytesReceived = clipboardSocket.Receive(fileSizeToByte);
+                                bytesReceived = clipboardSocket.Receive(fileSizeToByte, 4, SocketFlags.None);
                                 int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
 
                                 total = 0;
@@ -382,7 +382,7 @@ namespace Utils.ClipboardSend
                             {
                                 //Receive a zipped directory
                                 byte[] fileNameSizeToByte = new byte[4];
-                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte);
+                                bytesReceived = clipboardSocket.Receive(fileNameSizeToByte, 4, SocketFlags.None);
                                 int fileNameSize = BitConverter.ToInt32(fileNameSizeToByte, 0);
 
                                 int total = 0;
@@ -403,7 +403,7 @@ namespace Utils.ClipboardSend
                                 string fileNameToString = Encoding.Unicode.GetString(fileName, 0, total);
 
                                 byte[] fileSizeToByte = new byte[4];
-                                bytesReceived = clipboardSocket.Receive(fileSizeToByte);
+                                bytesReceived = clipboardSocket.Receive(fileSizeToByte, 4, SocketFlags.None);
                                 int fileSize = BitConverter.ToInt32(fileSizeToByte, 0);
 
                                 total = 0;
@@ -435,9 +435,6 @@ namespace Utils.ClipboardSend
 
                         System.Windows.Clipboard.SetFileDropList(dropList);
                     }
-
-                    //ReceiveClipboard();  //TODO
-
                 }
             }
 

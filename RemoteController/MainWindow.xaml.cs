@@ -9,6 +9,7 @@ using Utils.Keyboard;
 using Utils.Mouse;
 using Utils.ClipboardSend;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RemoteController
 {
@@ -40,6 +41,7 @@ namespace RemoteController
         MouseListener MListener;
         ClipboardSender CSender;
         bool connected = false;
+        public delegate void ReceiveCallbackClipboard();
 
         public MainWindow()
         {
@@ -82,9 +84,17 @@ namespace RemoteController
                 MListener.MouseMove += new RawMouseEventHandler(MListener_MouseMove);
                 MListener.MouseWheel += new RawMouseEventHandler(MListener_MouseWheel);
 
-                Thread t = new Thread(() => CSender.ReceiveClipboard());
-                t.SetApartmentState(ApartmentState.STA);
-                t.Start();
+                Thread tt = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        Thread t = new Thread(() => CSender.ReceiveClipboard());
+                        t.SetApartmentState(ApartmentState.STA);
+                        t.Start();
+                        t.Join();
+                    }
+                });
+                tt.Start();
                 connected = true;
             }
             else if (pwdAccepted == 0)
