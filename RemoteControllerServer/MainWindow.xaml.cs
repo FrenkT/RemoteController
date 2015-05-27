@@ -40,6 +40,7 @@ namespace RemoteControllerServer
         private String pass = "";
         private String locIp = GetIP4Address();
         private int defaultPort = 4510;
+        private int flag = 0;
         private ClipboardListener CListener;
         private ClipboardSender CSender;
 
@@ -384,6 +385,7 @@ namespace RemoteControllerServer
             {
                 if (pass.CompareTo(inputpassword) == 0)
                 {
+                    flag = 1;
                     string str = "ok";
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
@@ -414,37 +416,44 @@ namespace RemoteControllerServer
         {
             try
             {
-                string str = "Disconnect";
-
-                ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
-
-                byte[] byteData = Encoding.Unicode.GetBytes(str);
-                receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
-
-                receiveControl.Shutdown(SocketShutdown.Both);
-                receiveControl.Disconnect(true);
-                receiveControl.Close();
-                receiveControl.Dispose();
-
-                receiveKeyboard.Shutdown(SocketShutdown.Both);
-                receiveKeyboard.Disconnect(true);
-                receiveKeyboard.Close();
-                receiveKeyboard.Dispose();
-
-                receiveClipboard.Shutdown(SocketShutdown.Both);
-                receiveClipboard.Disconnect(true);
-                receiveClipboard.Close();
-                receiveClipboard.Dispose();
-
-                mouseSocket.Shutdown(SocketShutdown.Both);
-                mouseSocket.Close();
-
-                this.Dispatcher.Invoke((Action)(() =>
+                if (flag == 1)
                 {
-                    tbConnectionStatus.Text = "Connection Close.";
-                    tbKeyboardStatus.Text = "Connection Keyboard Close.";
-                    tbMouseStatus.Text = "Connection Mouse Close.";
-                }));
+                    string str = "Disconnect";
+
+                    ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+
+                    byte[] byteData = Encoding.Unicode.GetBytes(str);
+                    receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
+
+                    receiveControl.Shutdown(SocketShutdown.Both);
+                    receiveControl.Disconnect(true);
+                    receiveControl.Close();
+                    receiveControl.Dispose();
+
+                    receiveKeyboard.Shutdown(SocketShutdown.Both);
+                    receiveKeyboard.Disconnect(true);
+                    receiveKeyboard.Close();
+                    receiveKeyboard.Dispose();
+
+                    receiveClipboard.Shutdown(SocketShutdown.Both);
+                    receiveClipboard.Disconnect(true);
+                    receiveClipboard.Close();
+                    receiveClipboard.Dispose();
+
+                    mouseSocket.Shutdown(SocketShutdown.Both);
+                    mouseSocket.Close();
+
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        tbConnectionStatus.Text = "Connection Close.";
+                        tbKeyboardStatus.Text = "Connection Keyboard Close.";
+                        tbMouseStatus.Text = "Connection Mouse Close.";
+                    }));
+                }
+                else {
+                    controlSocket.Close();
+                    controlSocket.Dispose();
+                }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
