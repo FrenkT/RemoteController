@@ -21,7 +21,6 @@ namespace Utils.Clipboard
         public event RawClipboardEventHandler ClipboardChange;
         private IntPtr hWndNextViewer;
         private HwndSource hWndSource;
-        private bool isViewing;
         private delegate void ClipboardCallbackAsync(bool changed);
         private ClipboardCallbackAsync hookedClipboardCallbackAsync;
         private InterceptClipboard.LowLevelClipboardProc hookedLowLevelClipboardProc;
@@ -35,7 +34,6 @@ namespace Utils.Clipboard
             hWndSource.AddHook(LowLevelClipboardProc);   // start processing window messages
             hookedClipboardCallbackAsync = new ClipboardCallbackAsync(ClipboardListener_ClipboardCallbackAsync);
             hWndNextViewer = InterceptClipboard.SetClipboardViewer(hWndSource.Handle);   // set this window as a viewer
-            isViewing = true;
         }
 
         ~ClipboardListener()
@@ -50,7 +48,6 @@ namespace Utils.Clipboard
             hWndNextViewer = IntPtr.Zero;
             hWndSource.RemoveHook(this.LowLevelClipboardProc);
             //pnlContent.Children.Clear();
-            isViewing = false;
         }
 
         private IntPtr LowLevelClipboardProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
