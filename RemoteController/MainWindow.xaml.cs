@@ -376,6 +376,9 @@ namespace RemoteController
         {
             try
             {
+                string disconnectMessage = "<Disconnect>";
+                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                int bytesSend = controlSocket.Send(disconnectToByte);
                 controlSocket.Close();
                 keyboardSocket.Close();
                 clipboardSocket.Shutdown(SocketShutdown.Both);

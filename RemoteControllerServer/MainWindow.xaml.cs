@@ -330,6 +330,10 @@ namespace RemoteControllerServer
                                 tt.Start();
                             }
                         }
+                        else if (content.IndexOf("<Disconnect>") > -1)
+                        {
+                            System.Windows.MessageBox.Show("Disconnesso");
+                        }
                         else
                         {
                             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
@@ -434,10 +438,9 @@ namespace RemoteControllerServer
             {
                 if (flag == 1)
                 {
-                    string str = "Disconnect";
-
                     ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
 
+                    string str = "Disconnect";
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
