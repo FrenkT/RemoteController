@@ -75,7 +75,7 @@ namespace RemoteController
 
                 Thread tt = new Thread(() =>
                 {
-                    while (true)
+                    while (clipboardSocket.Connected)
                     {
                         Thread t = new Thread(() => CSender.ReceiveClipboard());
                         t.SetApartmentState(ApartmentState.STA);
@@ -174,11 +174,13 @@ namespace RemoteController
                         try
                         {
                             controlSocket.Shutdown(SocketShutdown.Both);
-                            controlSocket.Disconnect(false);
                             controlSocket.Close();
                             controlSocket.Dispose();
                             keyboardSocket.Close();
                             mouseSocket.Close();
+                            clipboardSocket.Shutdown(SocketShutdown.Both);
+                            clipboardSocket.Close();
+                            clipboardSocket.Dispose();
                             this.Dispatcher.Invoke((Action)(() =>
                             {
                                 Disconnect_Button.IsEnabled = false;
