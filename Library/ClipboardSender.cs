@@ -35,7 +35,7 @@ namespace Utils.ClipboardSend
                             string data = System.Windows.Clipboard.GetText();
                             byte[] dataToByte = Encoding.Unicode.GetBytes(data);
 
-                            byte[] clipboardTypeToByte = new byte[4];
+                            byte[] clipboardTypeToByte = new byte[2];
                             clipboardTypeToByte = Encoding.Unicode.GetBytes("t");
                             int sent = clipboardSocket.Send(clipboardTypeToByte);
 
@@ -264,7 +264,7 @@ namespace Utils.ClipboardSend
                                 total += recv;
                                 dataleft -= recv;
                             }
-
+                            
                             String clipboardContentToString = Encoding.Unicode.GetString(clipboardContent, 0, total);
                             System.Windows.Clipboard.SetText(clipboardContentToString);
                         }

@@ -98,6 +98,7 @@ namespace RemoteControllerServer
                     InitClipboardSocket();
 
                     CListener = new ClipboardListener(this);
+                    
                     CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
                     
                     controlSocket.Listen(100);  //TODO
@@ -333,6 +334,7 @@ namespace RemoteControllerServer
                         else if (content.IndexOf("<Disconnect>") > -1)
                         {
                             System.Windows.MessageBox.Show("Disconnesso");
+                            ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
                         }
                         else
                         {
@@ -429,6 +431,7 @@ namespace RemoteControllerServer
                 Socket handler = (Socket)ar.AsyncState;
                 int bytesSend = handler.EndSend(ar);
             }
+            catch (ObjectDisposedException) { }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
         
@@ -445,23 +448,28 @@ namespace RemoteControllerServer
                     receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
                     receiveControl.Shutdown(SocketShutdown.Both);
-                    receiveControl.Disconnect(true);
+                    //receiveControl.Disconnect(true);
                     receiveControl.Close();
                     receiveControl.Dispose();
 
                     receiveKeyboard.Shutdown(SocketShutdown.Both);
-                    receiveKeyboard.Disconnect(true);
+                    //receiveKeyboard.Disconnect(true);
                     receiveKeyboard.Close();
                     receiveKeyboard.Dispose();
 
+                    //clipboardSocket.Shutdown(SocketShutdown.Both);
+                    //clipboardSocket.Close();
+
                     receiveClipboard.Shutdown(SocketShutdown.Both);
-                    receiveClipboard.Disconnect(true);
+                    //receiveClipboard.Disconnect(true);
                     receiveClipboard.Close();
                     receiveClipboard.Dispose();
 
                     mouseSocket.Shutdown(SocketShutdown.Both);
                     mouseSocket.Close();
 
+                    CListener.Dispose();
+                  
                     this.Dispatcher.Invoke((Action)(() =>
                     {
                         tbConnectionStatus.Text = "Connection Close.";
