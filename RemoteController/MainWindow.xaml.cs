@@ -198,6 +198,7 @@ namespace RemoteController
                     }
                 }
             }
+            catch (ObjectDisposedException) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
@@ -378,7 +379,7 @@ namespace RemoteController
                 controlSocket.Close();
                 keyboardSocket.Close();
                 clipboardSocket.Shutdown(SocketShutdown.Both);
-                clipboardSocket.Disconnect(true);
+                //clipboardSocket.Disconnect(true);
                 clipboardSocket.Close();
                 mouseSocket.Close();
                 
@@ -389,6 +390,7 @@ namespace RemoteController
                 tbMouseConnection.Text = "Not connected";
 
                 StopHooks();
+                Connect_Button.IsEnabled = true;
                 connected = false;
             }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
