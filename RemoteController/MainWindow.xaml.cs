@@ -651,5 +651,22 @@ namespace RemoteController
             }
             catch (NullReferenceException) { }
         }
+
+        private void DetectShortcut(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) ||
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) ||
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.B))
+            {
+                StopHooks();
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) ||
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) ||
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.C))
+            {
+                InitHooks();
+            }
+        }
     }
 }
