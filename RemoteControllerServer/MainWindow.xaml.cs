@@ -321,10 +321,14 @@ namespace RemoteControllerServer
                                         t.SetApartmentState(ApartmentState.STA);
                                         t.Start();
                                         t.Join();
-                                        this.Dispatcher.Invoke((Action)(() =>
+                                        try
                                         {
-                                            tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
-                                        }));
+                                            this.Dispatcher.Invoke((Action)(() =>
+                                            {
+                                                tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
+                                            }));
+                                        }
+                                        catch (System.Threading.Tasks.TaskCanceledException) { }
                                     }
                                 });
                                 tt.Start();
@@ -585,8 +589,50 @@ namespace RemoteControllerServer
 
         private void Window_Closing(object sender, EventArgs e)
         {
-            this.Close();
-            ni.Visible = false;
+            try
+            {
+                if (flag == 1)
+                {
+                    ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+
+                    string str = "Disconnect";
+                    byte[] byteData = Encoding.Unicode.GetBytes(str);
+                    receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
+
+                    receiveControl.Shutdown(SocketShutdown.Both);
+                    receiveControl.Close();
+                    receiveControl.Dispose();
+
+                    receiveKeyboard.Shutdown(SocketShutdown.Both);
+                    receiveKeyboard.Close();
+                    receiveKeyboard.Dispose();
+
+                    receiveClipboard.Shutdown(SocketShutdown.Both);
+                    receiveClipboard.Close();
+                    receiveClipboard.Dispose();
+
+                    mouseSocket.Shutdown(SocketShutdown.Both);
+                    mouseSocket.Close();
+
+                    CListener.Dispose();
+
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        tbConnectionStatus.Text = "Connection Close.";
+                        tbKeyboardStatus.Text = "Connection Keyboard Close.";
+                        tbMouseStatus.Text = "Connection Mouse Close.";
+                    }));
+                }
+                else
+                {
+                    controlSocket.Close();
+                    controlSocket.Dispose();
+                }
+                this.Close();
+                ni.Visible = false;
+            }
+            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            
         }
         
     }
