@@ -26,7 +26,7 @@ namespace RemoteControllerServer
         private System.Windows.Forms.NotifyIcon ni;
         private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem menuItemExit;
-        private System.Windows.Forms.MenuItem menuItemSettings;
+        //private System.Windows.Forms.MenuItem menuItemSettings;
         private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
         private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
@@ -58,28 +58,31 @@ namespace RemoteControllerServer
             this.components = new System.ComponentModel.Container();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.menuItemExit = new System.Windows.Forms.MenuItem();
-            this.menuItemSettings = new System.Windows.Forms.MenuItem();
+            //this.menuItemSettings = new System.Windows.Forms.MenuItem();
 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit, this.menuItemSettings});
-
+            //this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit, this.menuItemSettings});
+            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit });
             this.menuItemExit.Index = 0;
             this.menuItemExit.Text = "Exit";
             this.menuItemExit.Click += new System.EventHandler(this.menuItemExitClick);
 
-            this.menuItemSettings.Index = 0;
-            this.menuItemSettings.Text = "Show Settings";
-            this.menuItemSettings.Click += new System.EventHandler(this.menuItemSettingsClick);
+            //this.menuItemSettings.Index = 0;
+            //this.menuItemSettings.Text = "Show Settings";
+            //this.menuItemSettings.Click += new System.EventHandler(this.menuItemSettingsClick);
             
             // The ContextMenu property sets the menu that will appear when the systray icon is right clicked.
             ni.ContextMenu = this.contextMenu1;
 
             // The Text property sets the text that will be displayed, in a tooltip, when the mouse hovers over the systray icon.
-            ni.Text = "Remote Controller";
             ni.Visible = true;
 
             // Handle the DoubleClick event to activate the form.
             ni.DoubleClick += new System.EventHandler(this.NotifyIcon1DoubleClick);
-            
+
+            // per gestire la chiusura tramite alt+f4 e dal close 'x'
+            this.Closed += new EventHandler(Window_Closing);
+            //System.Windows.Application.Current.MainWindow.Closing += new CancelEventHandler(Window_Closing);
+
             Start_Button.IsEnabled = true;
             Close_Button.IsEnabled = false;
         }
@@ -90,6 +93,7 @@ namespace RemoteControllerServer
             {
                 if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
                 {
+                    
                     pass = TextBox_ConfigPassword.Password;
                     defaultPort = int.Parse(TextBox_ConfigPort.Text);
                     InitControlSocket();
@@ -305,6 +309,7 @@ namespace RemoteControllerServer
                                 StartListenMouse();
 
                                 ni.Icon = new System.Drawing.Icon(logoImageConnected);
+                                
 
                                 this.Dispatcher.Invoke((Action)(() =>
                                 {
@@ -335,6 +340,8 @@ namespace RemoteControllerServer
                         {
                             System.Windows.MessageBox.Show("Disconnesso");
                             ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+                            ni.BalloonTipText = "Client is disconnected";
+                            ni.ShowBalloonTip(3000);
                         }
                         else
                         {
@@ -409,6 +416,13 @@ namespace RemoteControllerServer
                 {
                     flag = 1;
                     string str = "ok";
+
+                    // visualizzo che la connessione e' ok.
+                    ni.Text = "Remote Controller";
+                    ni.BalloonTipTitle = "Remote Connection";
+                    ni.BalloonTipText = "Client is now connected";
+                    ni.ShowBalloonTip(30000);
+
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
                     return true;
@@ -562,17 +576,18 @@ namespace RemoteControllerServer
 
             if (this.WindowState == WindowState.Minimized)
                 this.WindowState = WindowState.Normal;
-
             this.Activate();
         }
-
+        
         private void menuItemExitClick(object Sender, EventArgs e)
         {
             // Close the form, which closes the application. 
-            this.Close();
-            ni.Visible = false;
+            //this.Close();
+            //ni.Visible = false;
+            Window_Closing(Sender, e);
         }
-
+        
+        /*
         private void menuItemSettingsClick(object Sender, EventArgs e)
         {
             Window2 new_window = new Window2(pass, locIp, defaultPort);
@@ -580,6 +595,22 @@ namespace RemoteControllerServer
             new_window.Show();
             new_window.Owner = this;
         }
+        */
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+            this.Left = desktopWorkingArea.Right - this.Width;
+            this.Top = desktopWorkingArea.Bottom - this.Height;
+            ni.BalloonTipTitle = "Remote Connection";
+            ni.BalloonTipText = "Remote Connection is now available";
+            ni.ShowBalloonTip(3000);
+        }
 
+        private void Window_Closing(object sender, EventArgs e)
+        {
+            this.Close();
+            ni.Visible = false;
+        }
+        
     }
 }

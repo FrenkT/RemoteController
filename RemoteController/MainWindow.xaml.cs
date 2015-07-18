@@ -441,6 +441,10 @@ namespace RemoteController
                 {
                     serverList.Remove(s);
                     listBoxServers.Items.Remove(s.name);
+                    TextBox_AddName.Text = "";
+                    TextBox_AddPassword.Text = "";
+                    TextBox_AddIp.Text = "";
+                    TextBox_AddPort.Text = "";
                     break;
                 }
             }

@@ -4,30 +4,31 @@
         Title="Client Socket" Height="553" Width="438" Activated="ActivateControl" Deactivated="DeactivateControl" WindowState="Maximized">
     <Grid Background="#FFD7CBFD" Margin="0,0,2,0">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="112*"/>
-            <ColumnDefinition Width="192*"/>
-            <ColumnDefinition Width="45*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="Disconnect_Button" Content="Disconnect" HorizontalAlignment="Left" Margin="10,294,0,0" VerticalAlignment="Top" Width="120" Click="DisconnectClick" Foreground="#FFF9F9F9" Background="Black" Grid.Column="1"/>
-        <ListBox x:Name="listBoxServers" HorizontalAlignment="Left" Height="100" Margin="14,181,0,0" VerticalAlignment="Top" Width="249" Grid.ColumnSpan="2" Loaded="LoadListItem" SelectionChanged="SelectItem"/>
-        <TextBox x:Name="TextBox_AddName" HorizontalAlignment="Left" Height="23" Margin="133,19,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Grid.ColumnSpan="2"/>
-        <Button x:Name="AddItem_Button" Content="Add Item" HorizontalAlignment="Left" Margin="14,143,0,0" VerticalAlignment="Top" Width="75" Click="AddItemClick"/>
-        <TextBox x:Name="TextBox_AddIp" HorizontalAlignment="Left" Height="23" Margin="133,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="TextBox_AddPassword" HorizontalAlignment="Left" Height="23" Margin="133,77,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Grid.ColumnSpan="2"/>
+        <Button x:Name="Disconnect_Button" Content="Disconnect" HorizontalAlignment="Left" Margin="12.5,294,0,0" VerticalAlignment="Top" Width="90" Click="DisconnectClick" Foreground="#FFF9F9F9" Background="Black" Grid.Column="2" Height="50"/>
+        <ListBox x:Name="listBoxServers" HorizontalAlignment="Left" Height="100" Margin="14,181,0,0" VerticalAlignment="Top" Width="371" Grid.ColumnSpan="3" Loaded="LoadListItem" SelectionChanged="SelectItem"/>
+        <TextBox x:Name="TextBox_AddName" HorizontalAlignment="Left" Height="23" Margin="10,19,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="AddItem_Button" Content="Add Item" HorizontalAlignment="Left" Margin="14,143,0,0" VerticalAlignment="Top" Width="90" Click="AddItemClick" Height="22"/>
+        <TextBox x:Name="TextBox_AddIp" HorizontalAlignment="Left" Height="23" Margin="10,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="TextBox_AddPassword" HorizontalAlignment="Left" Height="23" Margin="10,77,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Grid.Column="1" Grid.ColumnSpan="2"/>
         <Label Content="Name:" HorizontalAlignment="Left" Margin="10,19,0,0" VerticalAlignment="Top" Height="23" Width="75"/>
         <Label Content="IPAddress:" HorizontalAlignment="Left" Margin="10,49,0,0" VerticalAlignment="Top" Height="23" Width="75" RenderTransformOrigin="0.88,0.565"/>
         <Label Content="Password:" HorizontalAlignment="Left" Margin="10,77,0,0" VerticalAlignment="Top" Height="23" Width="70" RenderTransformOrigin="0.587,2.87"/>
-        <Button x:Name="DeleteItem_Button" Content="Delete Item" HorizontalAlignment="Left" Margin="99,143,0,0" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2" Click="DeleteItemClick"/>
+        <Button x:Name="DeleteItem_Button" Content="Delete Item" HorizontalAlignment="Left" Margin="34,143,0,0" VerticalAlignment="Top" Width="90" Click="DeleteItemClick" Grid.Column="1" Height="22"/>
         <Label Content="Port:" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.237,0.154" Height="23" Width="70"/>
-        <TextBox x:Name="TextBox_AddPort" HorizontalAlignment="Left" Height="23" Margin="133,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Grid.ColumnSpan="2"/>
-        <Button x:Name="EditItem_Button" Content="Edit Item" Grid.Column="1" HorizontalAlignment="Left" Margin="50,143,0,0" VerticalAlignment="Top" Width="75" Click="EditItemClick"/>
-        <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,501,0,-1" TextWrapping="Wrap" Text="Not connected" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
-        <Button x:Name="Connect_Button" Content="Connect" HorizontalAlignment="Left" Margin="14,294,0,0" VerticalAlignment="Top" Width="120" Click="ConnectClick" Foreground="#FFF9F9F9" Background="Black"/>
-        <TextBlock x:Name="tbKeyboardCapture" HorizontalAlignment="Left" Margin="0,429,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
-        <TextBlock x:Name="tbKeyboardConnection" HorizontalAlignment="Left" Margin="0,478,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Keyboard"/>
-        <TextBlock x:Name="tbMouseConnection" HorizontalAlignment="Left" Margin="0,455,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3" Text="Not connected Socket Mouse"/>
-        <TextBlock x:Name="tbMouseCapture" HorizontalAlignment="Left" Margin="0,406,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
-        <TextBlock x:Name="tbClipboardStatus" HorizontalAlignment="Left" Margin="0,383,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="3"/>
+        <TextBox x:Name="TextBox_AddPort" HorizontalAlignment="Left" Height="23" Margin="10,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="244" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="EditItem_Button" Content="Edit Item" Grid.Column="2" HorizontalAlignment="Left" Margin="15,143,0,0" VerticalAlignment="Top" Width="88" Click="EditItemClick" Height="22"/>
+        <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,501,0,-1" TextWrapping="Wrap" Text="Not connected" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
+        <Button x:Name="Connect_Button" Content="Connect" HorizontalAlignment="Left" Margin="14,294,0,0" VerticalAlignment="Top" Width="90" Click="ConnectClick" Foreground="#FFF9F9F9" Background="Black" Height="52"/>
+        <TextBlock x:Name="tbKeyboardCapture" HorizontalAlignment="Left" Margin="0,429,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
+        <TextBlock x:Name="tbKeyboardConnection" HorizontalAlignment="Left" Margin="0,478,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4" Text="Not connected Socket Keyboard"/>
+        <TextBlock x:Name="tbMouseConnection" HorizontalAlignment="Left" Margin="0,455,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4" Text="Not connected Socket Mouse"/>
+        <TextBlock x:Name="tbMouseCapture" HorizontalAlignment="Left" Margin="0,406,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
+        <TextBlock x:Name="tbClipboardStatus" HorizontalAlignment="Left" Margin="0,383,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
 
     </Grid>
 </Window>

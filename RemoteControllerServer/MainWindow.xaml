@@ -1,15 +1,18 @@
-﻿<Window x:Class="RemoteControllerServer.MainWindow"
+﻿<Window x:Name="Settings_Window" x:Class="RemoteControllerServer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Server Socket" Height="553" Width="366">
-    <Grid x:Name="MyNotify" Background="#FFD7CBFD">
+        Title="Server Settings" 
+        Height="292" Width="363"
+        Margin="0"
+        Loaded="Window_Loaded">
+    <Grid x:Name="ServerSettings" Background="#FFD7CBFD" VerticalAlignment="Top" Margin="0,0,2,0" Height="257">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="207*"/>
             <ColumnDefinition Width="151*"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="Start_Button" Content="Start server" HorizontalAlignment="Left" Margin="159,118,0,0" VerticalAlignment="Top" Width="179" Click="Start_Click" Background="Black" Foreground="White" Grid.ColumnSpan="2"/>
+        <Button x:Name="Start_Button" Content="Start server" HorizontalAlignment="Left" Margin="159,175,0,0" VerticalAlignment="Top" Width="179" Click="Start_Click" Background="Black" Foreground="White" Grid.ColumnSpan="2"/>
         <TextBlock x:Name="tbConnectionStatus" HorizontalAlignment="Left" Margin="0,498,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
-        <Button Name="Close_Button" Content="Close connection" HorizontalAlignment="Left" Margin="159,157,0,0" VerticalAlignment="Top" Width="179" Click="CloseClick" Background="Black" Foreground="White" Grid.ColumnSpan="2"/>
+        <Button Name="Close_Button" Content="Close connection" HorizontalAlignment="Left" Margin="159,218,0,0" VerticalAlignment="Top" Width="179" Click="CloseClick" Background="Black" Foreground="White" Grid.ColumnSpan="2"/>
         <TextBlock x:Name="tbMouseStatus" HorizontalAlignment="Left" Margin="-1,438,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
         <TextBlock x:Name="tbKeyboardStatus" HorizontalAlignment="Left" Margin="0,464,-1,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
         <Label Content="Configure Password:" Margin="20,35,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
@@ -17,6 +20,8 @@
         <PasswordBox x:Name="TextBox_ConfigPassword" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="159,35,0,0" VerticalAlignment="Top" Width="179" Height="26"/>
         <Label Content="Configure Port:" Margin="20,68,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
         <TextBlock x:Name="tbClipboardStatus" HorizontalAlignment="Left" Margin="0,412,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
+        <Label Content="Ip Address:" Margin="20,99,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
+        <PasswordBox x:Name="TextBox_IpAddress" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="159,99,0,0" VerticalAlignment="Top" Width="179" Height="26"/>
 
     </Grid>
 </Window>
