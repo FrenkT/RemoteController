@@ -36,6 +36,8 @@ namespace RemoteControllerServer
         private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         private Socket receiveControl, receiveKeyboard, receiveClipboard;
 
+        private Window2 new_window = new Window2();
+
         private IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         private String pass = "";
         private String locIp = GetIP4Address();
@@ -105,7 +107,7 @@ namespace RemoteControllerServer
                     
                     CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
                     
-                    controlSocket.Listen(100);  //TODO
+                    controlSocket.Listen(1);  //TODO
                     tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                     
                     AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
@@ -132,7 +134,7 @@ namespace RemoteControllerServer
                     IP4Address = IPA.ToString();
                     break;
                 }
-            }
+            }       
             return IP4Address;
         }
 
@@ -300,10 +302,10 @@ namespace RemoteControllerServer
                             string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
                             if (CheckPassword(str, handler))
                             {
-                                keyboardSocket.Listen(100);  //TODO
+                                keyboardSocket.Listen(1);  //TODO
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
-                                clipboardSocket.Listen(100);  //TODO
+                                clipboardSocket.Listen(1);  //TODO
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
                                 StartListenMouse();
@@ -338,7 +340,7 @@ namespace RemoteControllerServer
                         }
                         else if (content.IndexOf("<Disconnect>") > -1)
                         {
-                            System.Windows.MessageBox.Show("Disconnesso");
+                            //System.Windows.MessageBox.Show("Disconnesso");
                             ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
                             ni.BalloonTipText = "Client is disconnected";
                             ni.ShowBalloonTip(3000);
@@ -422,6 +424,10 @@ namespace RemoteControllerServer
                     ni.BalloonTipTitle = "Remote Connection";
                     ni.BalloonTipText = "Client is now connected";
                     ni.ShowBalloonTip(30000);
+                    // nuova finestra trasparente non invasiva
+                    
+                    new_window.Show();
+                    new_window.Owner = this;
 
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);

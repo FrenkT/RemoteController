@@ -4,20 +4,16 @@
         Title="Server Settings" 
         Height="338" Width="307"
         Background="#FFD7CBFD"  
-        Margin="0" Loaded="Window_Loaded">
-    <Grid x:Name="Server_Settings" Background="#FFD7CBFD" Height="308" VerticalAlignment="Top" Margin="0,0,2,0">
+        Margin="0" Visibility="Visible" WindowState="Maximized">
+    <Grid x:Name="Server_Settings" 
+          Background="#FFD7CBFD" 
+          Height="308" 
+          VerticalAlignment="Top" 
+          Margin="0,0,2,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="103*"/>
             <ColumnDefinition Width="43*"/>
         </Grid.ColumnDefinitions>
-        <Label Content="Configure Password:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" Width="134"/>
-        <Label Content="Configure Port:" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Width="134"/>
-        <Label Content="Ip Address:" HorizontalAlignment="Left" Margin="10,104,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.7,2.946" Width="134"/>
-        <TextBox x:Name="TextBox_ShowPwd" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="23" Margin="158,20,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129" IsEnabled="False"/>
-        <TextBox x:Name="TextBox_ShowPort" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="23" Margin="158,63,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129" IsEnabled="False"/>
-        <TextBox x:Name="TextBox_ShowIP" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="23" Margin="158,107,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129" IsEnabled="False"/>
-        <Label Content="Client Connected:" HorizontalAlignment="Left" Margin="10,150,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.7,2.946" Width="134"/>
-        <TextBox x:Name="TextBox_ShowClient" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="23" Margin="158,150,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129" IsEnabled="False"/>
 
     </Grid>
 </Window>

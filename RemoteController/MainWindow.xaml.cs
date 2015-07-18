@@ -134,8 +134,6 @@ namespace RemoteController
                                 Disconnect_Button.IsEnabled = false;
                                 Connect_Button.IsEnabled = true;
                                 tbConnectionStatus.Text = "Not connected";
-                                tbKeyboardConnection.Text = "Not connected";
-                                tbMouseConnection.Text = "Not connected";
                             }));
                             StopHooks();
                             connected = false;
@@ -331,7 +329,7 @@ namespace RemoteController
         {
             String serverName = TextBox_AddName.Text;
             String ipAddress = TextBox_AddIp.Text;
-            String password = TextBox_AddPassword.Text;
+            String password = TextBox_AddPassword.Password;
             String port = TextBox_AddPort.Text;
 
             if (!string.IsNullOrWhiteSpace(serverName) && !string.IsNullOrWhiteSpace(ipAddress)
@@ -368,7 +366,7 @@ namespace RemoteController
                     serverList.Remove(s);
                     listBoxServers.Items.Remove(s.name);
                     TextBox_AddName.Text = "";
-                    TextBox_AddPassword.Text = "";
+                    TextBox_AddPassword.Password = "";
                     TextBox_AddIp.Text = "";
                     TextBox_AddPort.Text = "";
                     break;
@@ -391,12 +389,12 @@ namespace RemoteController
                             TextBox_AddIp.Text = server.ipAddress;
                             TextBox_AddName.Text = server.name;
                             TextBox_AddPort.Text = server.port;
-                            TextBox_AddPassword.Text = server.password;
+                            TextBox_AddPassword.Password = server.password;
                         }
                     }
                     workingServerIp = TextBox_AddIp.Text;
                     workingPort = int.Parse(TextBox_AddPort.Text);
-                    workingPassword = TextBox_AddPassword.Text;
+                    workingPassword = TextBox_AddPassword.Password;
                 }
                 catch (Exception exc) { MessageBox.Show(exc.ToString()); }
             }
@@ -416,7 +414,7 @@ namespace RemoteController
                     s.name = TextBox_AddName.Text;
                     s.ipAddress = TextBox_AddIp.Text;
                     s.port = TextBox_AddPort.Text;
-                    s.password = TextBox_AddPassword.Text;
+                    s.password = TextBox_AddPassword.Password;
                     break;
                 }
             }
@@ -647,8 +645,6 @@ namespace RemoteController
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected";
-                tbKeyboardConnection.Text = "Not connected";
-                tbMouseConnection.Text = "Not connected";
 
                 StopHooks();
                 Connect_Button.IsEnabled = true;
@@ -676,8 +672,6 @@ namespace RemoteController
                 ListenFromServer();
 
                 tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
-                tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
-                tbMouseConnection.Text = "Client connected to " + mouseSocket.RemoteEndPoint.ToString();
                 Connect_Button.IsEnabled = false;
                 Disconnect_Button.IsEnabled = true;
                 InitHooks();
