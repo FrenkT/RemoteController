@@ -50,59 +50,7 @@ namespace RemoteController
 
         private void ConnectClick(object sender, RoutedEventArgs e)
         {
-            InitControlSocket(workingPort);
-
-            string passwordMessage = workingPassword + "<PasswordCheck>";
-            byte[] passwordToByte = Encoding.Unicode.GetBytes(passwordMessage);
-            int bytesSend = controlSocket.Send(passwordToByte);
-
-            int pwdAccepted = ReceivePasswordCheck();
-
-            if (pwdAccepted == 1)
-            {
-                InitKeyboardSocket(workingPort+10);
-                InitMouseSocket(workingPort+20);
-                InitClipboardSocket(workingPort+30);
-                CSender = new ClipboardSender(clipboardSocket);
-                ListenFromServer();
-
-                tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
-                tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
-                tbMouseConnection.Text = "Client connected to " + mouseSocket.RemoteEndPoint.ToString();
-                Connect_Button.IsEnabled = false;
-                Disconnect_Button.IsEnabled = true;
-                InitHooks();
-
-                Thread tt = new Thread(() =>
-                {
-                    while (clipboardSocket.Connected)
-                    {
-                        Thread t = new Thread(() => CSender.ReceiveClipboard());
-                        t.SetApartmentState(ApartmentState.STA);
-                        t.Start();
-                        t.Join();
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-                            tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
-                        }));
-                    }
-                });
-                tt.Start();
-                connected = true;
-            }
-            else if (pwdAccepted == 0)
-            {
-                controlSocket.Close();
-                Disconnect_Button.IsEnabled = false;
-                Connect_Button.IsEnabled = true;
-                MessageBox.Show("Wrong Password");
-            }
-            else
-            {
-                MessageBox.Show("Server could not check password, try changing port");
-                Disconnect_Button.IsEnabled = false;
-                Connect_Button.IsEnabled = true;
-            }
+            Connect();
         }
 
         private int ReceivePasswordCheck()
@@ -376,29 +324,7 @@ namespace RemoteController
 
         private void DisconnectClick(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                string disconnectMessage = "<Disconnect>";
-                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-                int bytesSend = controlSocket.Send(disconnectToByte);
-                controlSocket.Close();
-                keyboardSocket.Close();
-                clipboardSocket.Shutdown(SocketShutdown.Both);
-                //clipboardSocket.Disconnect(true);
-                clipboardSocket.Close();
-                mouseSocket.Close();
-                
-                Disconnect_Button.IsEnabled = false;
-                Connect_Button.IsEnabled = true;
-                tbConnectionStatus.Text = "Not connected";
-                tbKeyboardConnection.Text = "Not connected";
-                tbMouseConnection.Text = "Not connected";
-
-                StopHooks();
-                Connect_Button.IsEnabled = true;
-                connected = false;
-            }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            Disconnect();
         }
 
         private void AddItemClick(object sender, RoutedEventArgs e)
@@ -654,18 +580,155 @@ namespace RemoteController
 
         private void DetectShortcut(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) ||
-                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) ||
-                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.B))
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.S))
             {
                 StopHooks();
             }
 
-            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) ||
-                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) ||
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.C))
             {
                 InitHooks();
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D))
+            {
+                Disconnect();
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D1))
+            {
+                SwitchServer(0);
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D2))
+            {
+                SwitchServer(1);
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D3))
+            {
+                SwitchServer(2);
+            }
+
+            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
+                System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D4))
+            {
+                SwitchServer(3);
+            }
+        }
+
+        private void Disconnect()
+        {
+            try
+            {
+                string disconnectMessage = "<Disconnect>";
+                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                int bytesSend = controlSocket.Send(disconnectToByte);
+                controlSocket.Close();
+                keyboardSocket.Close();
+                clipboardSocket.Shutdown(SocketShutdown.Both);
+                //clipboardSocket.Disconnect(true);
+                clipboardSocket.Close();
+                mouseSocket.Close();
+
+                Disconnect_Button.IsEnabled = false;
+                Connect_Button.IsEnabled = true;
+                tbConnectionStatus.Text = "Not connected";
+                tbKeyboardConnection.Text = "Not connected";
+                tbMouseConnection.Text = "Not connected";
+
+                StopHooks();
+                Connect_Button.IsEnabled = true;
+                connected = false;
+            }
+            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+        }
+
+        private void Connect()
+        {
+            InitControlSocket(workingPort);
+
+            string passwordMessage = workingPassword + "<PasswordCheck>";
+            byte[] passwordToByte = Encoding.Unicode.GetBytes(passwordMessage);
+            int bytesSend = controlSocket.Send(passwordToByte);
+
+            int pwdAccepted = ReceivePasswordCheck();
+
+            if (pwdAccepted == 1)
+            {
+                InitKeyboardSocket(workingPort + 10);
+                InitMouseSocket(workingPort + 20);
+                InitClipboardSocket(workingPort + 30);
+                CSender = new ClipboardSender(clipboardSocket);
+                ListenFromServer();
+
+                tbConnectionStatus.Text = "Client connected to " + controlSocket.RemoteEndPoint.ToString();
+                tbKeyboardConnection.Text = "Client connected to " + keyboardSocket.RemoteEndPoint.ToString();
+                tbMouseConnection.Text = "Client connected to " + mouseSocket.RemoteEndPoint.ToString();
+                Connect_Button.IsEnabled = false;
+                Disconnect_Button.IsEnabled = true;
+                InitHooks();
+
+                Thread tt = new Thread(() =>
+                {
+                    while (clipboardSocket.Connected)
+                    {
+                        Thread t = new Thread(() => CSender.ReceiveClipboard());
+                        t.SetApartmentState(ApartmentState.STA);
+                        t.Start();
+                        t.Join();
+                        this.Dispatcher.Invoke((Action)(() =>
+                        {
+                            tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
+                        }));
+                    }
+                });
+                tt.Start();
+                connected = true;
+            }
+            else if (pwdAccepted == 0)
+            {
+                controlSocket.Close();
+                Disconnect_Button.IsEnabled = false;
+                Connect_Button.IsEnabled = true;
+                MessageBox.Show("Wrong Password");
+            }
+            else
+            {
+                MessageBox.Show("Server could not check password, try changing port");
+                Disconnect_Button.IsEnabled = false;
+                Connect_Button.IsEnabled = true;
+            }
+        }
+
+        private void SwitchServer(int i)
+        {
+            if (i < serverList.Count)
+            {
+                if (connected)
+                {
+                    Disconnect();
+                }
+
+                Server server = serverList[i];
+                workingServerIp = server.ipAddress;
+                workingPort = int.Parse(server.port);
+                workingPassword = server.password;
+
+                Connect();
             }
         }
     }
