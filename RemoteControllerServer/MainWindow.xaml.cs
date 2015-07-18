@@ -26,7 +26,6 @@ namespace RemoteControllerServer
         private System.Windows.Forms.NotifyIcon ni;
         private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem menuItemExit;
-        //private System.Windows.Forms.MenuItem menuItemSettings;
         private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
         private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
@@ -36,7 +35,7 @@ namespace RemoteControllerServer
         private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         private Socket receiveControl, receiveKeyboard, receiveClipboard;
 
-        private Window2 new_window = new Window2();
+        //private Window2 new_window = new Window2();
 
         private IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         private String pass = "";
@@ -60,18 +59,12 @@ namespace RemoteControllerServer
             this.components = new System.ComponentModel.Container();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.menuItemExit = new System.Windows.Forms.MenuItem();
-            //this.menuItemSettings = new System.Windows.Forms.MenuItem();
 
-            //this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit, this.menuItemSettings});
             this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit });
             this.menuItemExit.Index = 0;
             this.menuItemExit.Text = "Exit";
             this.menuItemExit.Click += new System.EventHandler(this.menuItemExitClick);
 
-            //this.menuItemSettings.Index = 0;
-            //this.menuItemSettings.Text = "Show Settings";
-            //this.menuItemSettings.Click += new System.EventHandler(this.menuItemSettingsClick);
-            
             // The ContextMenu property sets the menu that will appear when the systray icon is right clicked.
             ni.ContextMenu = this.contextMenu1;
 
@@ -83,7 +76,6 @@ namespace RemoteControllerServer
 
             // per gestire la chiusura tramite alt+f4 e dal close 'x'
             this.Closed += new EventHandler(Window_Closing);
-            //System.Windows.Application.Current.MainWindow.Closing += new CancelEventHandler(Window_Closing);
 
             Start_Button.IsEnabled = true;
             Close_Button.IsEnabled = false;
@@ -107,7 +99,7 @@ namespace RemoteControllerServer
                     
                     CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
                     
-                    controlSocket.Listen(1);  //TODO
+                    controlSocket.Listen(1);
                     tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                     
                     AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
@@ -302,10 +294,10 @@ namespace RemoteControllerServer
                             string str = content.Substring(0, content.LastIndexOf("<PasswordCheck>"));
                             if (CheckPassword(str, handler))
                             {
-                                keyboardSocket.Listen(1);  //TODO
+                                keyboardSocket.Listen(1);
                                 AsyncCallback aCallback2 = new AsyncCallback(AcceptCallback);
                                 keyboardSocket.BeginAccept(aCallback2, keyboardSocket);
-                                clipboardSocket.Listen(1);  //TODO
+                                clipboardSocket.Listen(1);
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
                                 StartListenMouse();
@@ -340,7 +332,6 @@ namespace RemoteControllerServer
                         }
                         else if (content.IndexOf("<Disconnect>") > -1)
                         {
-                            //System.Windows.MessageBox.Show("Disconnesso");
                             ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
                             ni.BalloonTipText = "Client is disconnected";
                             ni.ShowBalloonTip(3000);
@@ -419,15 +410,13 @@ namespace RemoteControllerServer
                     flag = 1;
                     string str = "ok";
 
-                    // visualizzo che la connessione e' ok.
                     ni.Text = "Remote Controller";
                     ni.BalloonTipTitle = "Remote Connection";
                     ni.BalloonTipText = "Client is now connected";
                     ni.ShowBalloonTip(30000);
-                    // nuova finestra trasparente non invasiva
                     
-                    new_window.Show();
-                    new_window.Owner = this;
+                    //new_window.Show();
+                    //new_window.Owner = this;
 
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
@@ -468,20 +457,14 @@ namespace RemoteControllerServer
                     receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
                     receiveControl.Shutdown(SocketShutdown.Both);
-                    //receiveControl.Disconnect(true);
                     receiveControl.Close();
                     receiveControl.Dispose();
 
                     receiveKeyboard.Shutdown(SocketShutdown.Both);
-                    //receiveKeyboard.Disconnect(true);
                     receiveKeyboard.Close();
                     receiveKeyboard.Dispose();
 
-                    //clipboardSocket.Shutdown(SocketShutdown.Both);
-                    //clipboardSocket.Close();
-
                     receiveClipboard.Shutdown(SocketShutdown.Both);
-                    //receiveClipboard.Disconnect(true);
                     receiveClipboard.Close();
                     receiveClipboard.Dispose();
 
@@ -587,21 +570,9 @@ namespace RemoteControllerServer
         
         private void menuItemExitClick(object Sender, EventArgs e)
         {
-            // Close the form, which closes the application. 
-            //this.Close();
-            //ni.Visible = false;
             Window_Closing(Sender, e);
         }
         
-        /*
-        private void menuItemSettingsClick(object Sender, EventArgs e)
-        {
-            Window2 new_window = new Window2(pass, locIp, defaultPort);
-
-            new_window.Show();
-            new_window.Owner = this;
-        }
-        */
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
