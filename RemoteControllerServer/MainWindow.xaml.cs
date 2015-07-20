@@ -114,8 +114,8 @@ namespace RemoteControllerServer
                 }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-            Start_Button.IsEnabled = true;
-            Close_Button.IsEnabled = false;
+            Start_Button.IsEnabled = false;
+            Close_Button.IsEnabled = true;
         }
 
         public static string GetIP4Address()
@@ -417,8 +417,8 @@ namespace RemoteControllerServer
                     flag = 1;
                     string str = "ok";
                     
-                    remoteip = receiveControl.RemoteEndPoint.ToString();
-                    TextBox_RemoteIpAddress.Text = remoteip;
+                    //remoteip = receiveControl.RemoteEndPoint.ToString();
+                    //TextBox_RemoteIpAddress.Text = remoteip;
 
                     ni.Text = "Remote Controller";
                     ni.BalloonTipTitle = "Remote Connection";
