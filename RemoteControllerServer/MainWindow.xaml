@@ -21,7 +21,9 @@
         <Label Content="Configure Port:" Margin="20,68,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
         <TextBlock x:Name="tbClipboardStatus" HorizontalAlignment="Left" Margin="0,412,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="359" Height="26" Grid.ColumnSpan="2"/>
         <Label Content="Ip Address:" Margin="20,99,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
-        <PasswordBox x:Name="TextBox_IpAddress" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="159,99,0,0" VerticalAlignment="Top" Width="179" Height="26"/>
+        <TextBox x:Name="TextBox_IpAddress" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="159,99,0,0" VerticalAlignment="Top" Width="179" Height="26"/>
+        <Label Content="Remote Ip Address:" Margin="20,130,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134"/>
+        <TextBox x:Name="TextBox_RemoteIpAddress" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="159,130,0,0" VerticalAlignment="Top" Width="179" Height="26"/>
 
     </Grid>
 </Window>

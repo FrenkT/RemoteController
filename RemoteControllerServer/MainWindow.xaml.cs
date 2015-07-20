@@ -40,6 +40,7 @@ namespace RemoteControllerServer
         private IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         private String pass = "";
         private String locIp = GetIP4Address();
+        private String remoteip = "";
         private int defaultPort = 4510;
         private int flag = 0;
         private ClipboardListener CListener;
@@ -49,6 +50,8 @@ namespace RemoteControllerServer
         public MainWindow()
         {
             InitializeComponent();
+
+            TextBox_IpAddress.Text = locIp;
 
             // Create the notifyIcon
             ni = new System.Windows.Forms.NotifyIcon();
@@ -111,8 +114,8 @@ namespace RemoteControllerServer
                 }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-            Start_Button.IsEnabled = false;
-            Close_Button.IsEnabled = true;
+            Start_Button.IsEnabled = true;
+            Close_Button.IsEnabled = false;
         }
 
         public static string GetIP4Address()
@@ -413,6 +416,9 @@ namespace RemoteControllerServer
                 {
                     flag = 1;
                     string str = "ok";
+                    
+                    remoteip = receiveControl.RemoteEndPoint.ToString();
+                    TextBox_RemoteIpAddress.Text = remoteip;
 
                     ni.Text = "Remote Controller";
                     ni.BalloonTipTitle = "Remote Connection";
@@ -623,17 +629,12 @@ namespace RemoteControllerServer
                         tbMouseStatus.Text = "Connection Mouse Close.";
                     }));
                 }
-                else
-                {
-                    controlSocket.Close();
-                    controlSocket.Dispose();
-                }
-                this.Close();
+                
+                this.Close(); // questa roba non funziona se non ho fatto la start
                 ni.Visible = false;
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
             
-        }
-        
+        }        
     }
 }
