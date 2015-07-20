@@ -318,7 +318,7 @@ namespace RemoteControllerServer
                                 
                                 Thread tt = new Thread(() =>
                                 {
-                                    while (true && receiveClipboard.Connected)
+                                    while (receiveClipboard.Connected)
                                     {
                                         Thread t = new Thread(() => CSender.ReceiveClipboard());
                                         t.SetApartmentState(ApartmentState.STA);
@@ -342,6 +342,23 @@ namespace RemoteControllerServer
                             ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
                             ni.BalloonTipText = "Client is disconnected";
                             ni.ShowBalloonTip(3000);
+
+                            receiveControl.Shutdown(SocketShutdown.Both);
+                            receiveControl.Close();
+                            receiveControl.Dispose();
+
+                            receiveKeyboard.Shutdown(SocketShutdown.Both);
+                            receiveKeyboard.Close();
+                            receiveKeyboard.Dispose();
+
+                            receiveClipboard.Shutdown(SocketShutdown.Both);
+                            receiveClipboard.Close();
+                            receiveClipboard.Dispose();
+
+                            mouseSocket.Shutdown(SocketShutdown.Both);
+                            mouseSocket.Close();
+
+                            CListener.Dispose();
                         }
                         else
                         {
