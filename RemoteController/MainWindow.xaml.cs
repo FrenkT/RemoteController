@@ -546,7 +546,6 @@ namespace RemoteController
                 Thread t = new Thread(() => CSender.SendClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
-                t.Join();
             }
         }
 
@@ -587,6 +586,8 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.S))
             {
                 StopHooks();
+                SendKey("UP", 162);
+                SendKey("UP", 160);
             }
 
             if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
