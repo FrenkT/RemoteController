@@ -17,6 +17,7 @@ namespace Utils.ClipboardSend
     {
 
         Socket clipboardSocket;
+        public bool justReceivedContent = false;
 
         public ClipboardSender(Socket socket) {
             clipboardSocket = socket;
@@ -264,7 +265,8 @@ namespace Utils.ClipboardSend
                                 total += recv;
                                 dataleft -= recv;
                             }
-                            
+
+                            justReceivedContent = true;
                             String clipboardContentToString = Encoding.Unicode.GetString(clipboardContent, 0, total);
                             System.Windows.Clipboard.SetText(clipboardContentToString);
                         }
@@ -297,6 +299,7 @@ namespace Utils.ClipboardSend
                             image.StreamSource = stream;
                             image.EndInit();
 
+                            justReceivedContent = true;
                             System.Windows.Clipboard.SetImage(image);
                         }
 
@@ -321,6 +324,7 @@ namespace Utils.ClipboardSend
                                 total += recv;
                                 dataleft -= recv;
                             }
+                            justReceivedContent = true;
                             System.Windows.Clipboard.SetAudio(clipboardContent);
                         }
 
@@ -440,7 +444,7 @@ namespace Utils.ClipboardSend
                                     dropList.Add(folderPath);
                                 }
                             }
-
+                            justReceivedContent = true;
                             System.Windows.Clipboard.SetFileDropList(dropList);
                         }
                     }
@@ -448,7 +452,6 @@ namespace Utils.ClipboardSend
             }
             catch (SocketException) {}
             catch (ObjectDisposedException) {}
-
         }
     }
 }

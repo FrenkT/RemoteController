@@ -43,7 +43,6 @@ namespace RemoteControllerServer
         private String remoteip = "";
         private int defaultPort = 4510;
         private int flag = 0;
-        private bool justReceivedClipboard = false;
         private ClipboardListener CListener;
         private ClipboardSender CSender;
 
@@ -333,7 +332,6 @@ namespace RemoteControllerServer
                                             }));
                                         }
                                         catch (System.Threading.Tasks.TaskCanceledException) { }
-                                        justReceivedClipboard = true;
                                     }
                                 });
                                 tt.Start();
@@ -561,7 +559,7 @@ namespace RemoteControllerServer
         {
             if (CSender != null) 
             {
-                if (!justReceivedClipboard)
+                if (!CSender.justReceivedContent)
                 {
                     this.Dispatcher.Invoke((Action)(() =>
                     {
@@ -573,7 +571,7 @@ namespace RemoteControllerServer
                 }
                 else
                 {
-                    justReceivedClipboard = false;
+                    CSender.justReceivedContent = false;
                 }
             }
         }
