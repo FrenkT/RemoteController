@@ -318,7 +318,7 @@ namespace RemoteControllerServer
                                 
                                 Thread tt = new Thread(() =>
                                 {
-                                    while (true)
+                                    while (true && receiveClipboard.Connected)
                                     {
                                         Thread t = new Thread(() => CSender.ReceiveClipboard());
                                         t.SetApartmentState(ApartmentState.STA);
@@ -568,6 +568,7 @@ namespace RemoteControllerServer
                     Thread t = new Thread(() => CSender.SendClipboard());
                     t.SetApartmentState(ApartmentState.STA);
                     t.Start();
+                    t.Join();
                 }
                 else
                 {

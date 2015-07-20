@@ -40,6 +40,7 @@ namespace RemoteController
         private MouseListener MListener;
         private ClipboardSender CSender;
         private bool connected = false;
+        private bool firstTimeActivated = true;
         public delegate void ReceiveCallbackClipboard();
 
         public MainWindow()
@@ -538,17 +539,20 @@ namespace RemoteController
 
         private void ActivateControl(object sender, EventArgs e)
         {
-            if (connected)
+            if (connected && firstTimeActivated)
             {
+                firstTimeActivated = false;
                 InitHooks();
                 Thread t = new Thread(() => CSender.SendClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
+                t.Join();
             }
         }
 
         private void DeactivateControl(object sender, EventArgs e)
         {
+            firstTimeActivated = true;
             StopHooks();
         }
 
