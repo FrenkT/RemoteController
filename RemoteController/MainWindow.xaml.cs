@@ -596,6 +596,8 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D))
             {
+                SendKey("UP", 160);
+                SendKey("UP", 162);
                 Disconnect();
             }
 
@@ -713,6 +715,8 @@ namespace RemoteController
             {
                 if (connected)
                 {
+                    SendKey("UP", 160);
+                    SendKey("UP", 162);
                     Disconnect();
                 }
 
