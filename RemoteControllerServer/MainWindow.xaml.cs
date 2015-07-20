@@ -43,6 +43,7 @@ namespace RemoteControllerServer
         private String remoteip = "";
         private int defaultPort = 4510;
         private int flag = 0;
+        private bool justReceivedClipboard = false;
         private ClipboardListener CListener;
         private ClipboardSender CSender;
 
@@ -332,6 +333,7 @@ namespace RemoteControllerServer
                                             }));
                                         }
                                         catch (System.Threading.Tasks.TaskCanceledException) { }
+                                        justReceivedClipboard = true;
                                     }
                                 });
                                 tt.Start();
@@ -559,13 +561,20 @@ namespace RemoteControllerServer
         {
             if (CSender != null) 
             {
-                this.Dispatcher.Invoke((Action)(() =>
+                if (!justReceivedClipboard)
                 {
-                    tbClipboardStatus.Text = "Sending clipboard content to the client " + DateTime.Now.ToString();
-                }));
-                Thread t = new Thread(() => CSender.SendClipboard());
-                t.SetApartmentState(ApartmentState.STA);
-                t.Start();
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        tbClipboardStatus.Text = "Sending clipboard content to the client " + DateTime.Now.ToString();
+                    }));
+                    Thread t = new Thread(() => CSender.SendClipboard());
+                    t.SetApartmentState(ApartmentState.STA);
+                    t.Start();
+                }
+                else
+                {
+                    justReceivedClipboard = false;
+                }
             }
         }
 
