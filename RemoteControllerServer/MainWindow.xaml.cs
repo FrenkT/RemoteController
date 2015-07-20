@@ -355,10 +355,10 @@ namespace RemoteControllerServer
                             receiveClipboard.Close();
                             receiveClipboard.Dispose();
 
-                            mouseSocket.Shutdown(SocketShutdown.Both);
-                            mouseSocket.Close();
+                            //mouseSocket.Shutdown(SocketShutdown.Both);
+                            //mouseSocket.Close();
 
-                            CListener.Dispose();
+                            //CListener.Dispose();
                         }
                         else
                         {
@@ -585,7 +585,7 @@ namespace RemoteControllerServer
                     Thread t = new Thread(() => CSender.SendClipboard());
                     t.SetApartmentState(ApartmentState.STA);
                     t.Start();
-                    t.Join();
+                   // t.Join();
                 }
                 else
                 {
