@@ -4,7 +4,7 @@
         Title="Server Settings" 
         Height="292" Width="363"
         Margin="0"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded" Closing="WindowClosed">
     <Grid x:Name="ServerSettings" Background="#FFD7CBFD" VerticalAlignment="Top" Margin="0,0,2,0" Height="257">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="207*"/>
