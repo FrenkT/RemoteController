@@ -693,12 +693,6 @@ namespace RemoteController
                         t.SetApartmentState(ApartmentState.STA);
                         t.Start();
                         t.Join();
-                        if (connected) {
-                            this.Dispatcher.Invoke((Action)(() =>
-                            {
-                                tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
-                            }));
-                        }
                     }
                 });
                 tt.Start();
