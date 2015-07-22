@@ -29,10 +29,13 @@ namespace RemoteControllerServer
         private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
         //private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
-        private string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
-        private string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
-        private string logoImagePause = new Uri(Path.Combine(outPutDirectory, "Icons\\pause.ico")).LocalPath;
-        
+        private static string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
+        private static string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
+        private static string logoImagePause = new Uri(Path.Combine(outPutDirectory, "Icons\\pause.ico")).LocalPath;
+        private System.Drawing.Icon iconDisconnected = new System.Drawing.Icon(logoImageDisconnected);
+        private System.Drawing.Icon iconConnected = new System.Drawing.Icon(logoImageConnected);
+        private System.Drawing.Icon iconPause = new System.Drawing.Icon(logoImagePause);
+
         private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         private Socket receiveControl, receiveKeyboard, receiveClipboard;
 
@@ -55,7 +58,7 @@ namespace RemoteControllerServer
             ni = new System.Windows.Forms.NotifyIcon();
 
             // The Icon property sets the icon that will appear in the systray for this application
-            ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+            ni.Icon = iconDisconnected;
             
             this.components = new System.ComponentModel.Container();
             //this.contextMenu1 = new System.Windows.Forms.ContextMenu();
@@ -302,7 +305,7 @@ namespace RemoteControllerServer
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
                                 StartListenMouse();
 
-                                ni.Icon = new System.Drawing.Icon(logoImageConnected);
+                                ni.Icon = iconConnected;
                                 
 
                                 
@@ -325,7 +328,7 @@ namespace RemoteControllerServer
                         }
                         else if (content.IndexOf("<Disconnect>") > -1)
                         {
-                            ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+                            ni.Icon = iconDisconnected;
                             ni.BalloonTipText = "Client is disconnected";
                             ni.ShowBalloonTip(3000);
 
@@ -350,13 +353,13 @@ namespace RemoteControllerServer
                         }
                         else if(content.IndexOf("<Stop>") > -1)
                         {
-                            ni.Icon = new System.Drawing.Icon(logoImagePause);
+                            ni.Icon = iconPause;
                             ni.BalloonTipText = "Client stopped control";
                             ni.ShowBalloonTip(3000);
                         }
                         else if (content.IndexOf("<Restart>") > -1)
                         {
-                            ni.Icon = new System.Drawing.Icon(logoImageConnected);
+                            ni.Icon = iconConnected;
                             ni.BalloonTipText = "Client restarted control";
                             ni.ShowBalloonTip(3000);
                         }
@@ -471,7 +474,7 @@ namespace RemoteControllerServer
             {
                 if (connected == 1)
                 {
-                    ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+                    ni.Icon = iconDisconnected;
 
                     string str = "Disconnect";
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
@@ -601,7 +604,7 @@ namespace RemoteControllerServer
             {
                 if (connected == 1)
                 {
-                    ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
+                    ni.Icon = iconDisconnected;
 
                     string str = "Disconnect";
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
