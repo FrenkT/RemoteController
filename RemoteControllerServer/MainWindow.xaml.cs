@@ -31,16 +31,14 @@ namespace RemoteControllerServer
         private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
         private string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
         private string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
-
+        private string logoImagePause = new Uri(Path.Combine(outPutDirectory, "Icons\\pause.ico")).LocalPath;
+        
         private Socket controlSocket, keyboardSocket, mouseSocket, clipboardSocket;
         private Socket receiveControl, receiveKeyboard, receiveClipboard;
-
-        //private Window2 new_window = new Window2();
 
         private IPEndPoint ipEndPoint, ipEndPointKb, ipEndPointM;
         private String pass = "";
         private String locIp = GetIP4Address();
-        private String remoteip = "";
         private int defaultPort = 4510;
         private int flag = 0;
         private ClipboardListener CListener;
@@ -79,7 +77,7 @@ namespace RemoteControllerServer
 
             // per gestire la chiusura tramite alt+f4 e dal close 'x'
             this.Closed += new EventHandler(Window_Closing);
-
+            
             Start_Button.IsEnabled = true;
             Close_Button.IsEnabled = false;
         }
@@ -103,7 +101,6 @@ namespace RemoteControllerServer
                     CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
                     
                     controlSocket.Listen(1);
-                    tbConnectionStatus.Text = "Server is now listening on " + ipEndPoint.Address + " port: " + ipEndPoint.Port;
                     
                     AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                     controlSocket.BeginAccept(aCallback, controlSocket);
@@ -308,12 +305,7 @@ namespace RemoteControllerServer
                                 ni.Icon = new System.Drawing.Icon(logoImageConnected);
                                 
 
-                                this.Dispatcher.Invoke((Action)(() =>
-                                {
-                                    tbConnectionStatus.Text = "Connection accepted.";
-                                    tbKeyboardStatus.Text = "Connection Keyboard accepted.";
-                                    tbMouseStatus.Text = "Connection Mouse accepted.";
-                                }));
+                                
                                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
                                 
                                 Thread tt = new Thread(() =>
@@ -324,14 +316,7 @@ namespace RemoteControllerServer
                                         t.SetApartmentState(ApartmentState.STA);
                                         t.Start();
                                         t.Join();
-                                        try
-                                        {
-                                            this.Dispatcher.Invoke((Action)(() =>
-                                            {
-                                                tbClipboardStatus.Text = "New content on clipboard " + DateTime.Now.ToString();
-                                            }));
-                                        }
-                                        catch (System.Threading.Tasks.TaskCanceledException) { }
+                                        
                                     }
                                 });
                                 tt.Start();
@@ -433,17 +418,11 @@ namespace RemoteControllerServer
                 {
                     flag = 1;
                     string str = "ok";
-                    
-                    //remoteip = receiveControl.RemoteEndPoint.ToString();
-                    //TextBox_RemoteIpAddress.Text = remoteip;
 
                     ni.Text = "Remote Controller";
                     ni.BalloonTipTitle = "Remote Connection";
                     ni.BalloonTipText = "Client is now connected";
                     ni.ShowBalloonTip(30000);
-                    
-                    //new_window.Show();
-                    //new_window.Owner = this;
 
                     byte[] byteData = Encoding.Unicode.GetBytes(str);
                     handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
@@ -500,12 +479,7 @@ namespace RemoteControllerServer
 
                     CListener.Dispose();
                   
-                    this.Dispatcher.Invoke((Action)(() =>
-                    {
-                        tbConnectionStatus.Text = "Connection Close.";
-                        tbKeyboardStatus.Text = "Connection Keyboard Close.";
-                        tbMouseStatus.Text = "Connection Mouse Close.";
-                    }));
+                    
                 }
                 else {
                     controlSocket.Close();
@@ -520,10 +494,7 @@ namespace RemoteControllerServer
 
         private void ParseKBEvent(string kbEvent)
         {
-            this.Dispatcher.Invoke((Action)(() =>
-            {
-                tbKeyboardStatus.Text = "keyboard received -> " + kbEvent;
-            }));
+            
             string[] words = kbEvent.Split(new char[] { '+' }, 2);
             if (words[0] == "UP")
             {
@@ -537,10 +508,7 @@ namespace RemoteControllerServer
        
         private void ParseMouseEvent(string mouseEvent)
         {
-            this.Dispatcher.Invoke((Action)(() =>
-            {
-                tbMouseStatus.Text = "mouse received -> " + mouseEvent;
-            }));
+            
             string[] words = mouseEvent.Split('+');
             if (words[0] == "LEFTDOWN")
             {
@@ -565,10 +533,7 @@ namespace RemoteControllerServer
             if (words[0] == "WHEEL")
             {
                 InputGenerator.SendWheel(int.Parse(words[1]), int.Parse(words[2]), int.Parse(words[3]));
-                this.Dispatcher.Invoke((Action)(() =>
-                {
-                    tbMouseStatus.Text = "mouse received -> " + mouseEvent + " data -> " + words[3];
-                }));
+                
             }
         }
 
@@ -578,10 +543,7 @@ namespace RemoteControllerServer
             {
                 if (!CSender.justReceivedContent)
                 {
-                    this.Dispatcher.Invoke((Action)(() =>
-                    {
-                        tbClipboardStatus.Text = "Sending clipboard content to the client " + DateTime.Now.ToString();
-                    }));
+                    
                     Thread t = new Thread(() => CSender.SendClipboard());
                     t.SetApartmentState(ApartmentState.STA);
                     t.Start();
@@ -647,12 +609,7 @@ namespace RemoteControllerServer
 
                     CListener.Dispose();
 
-                    this.Dispatcher.Invoke((Action)(() =>
-                    {
-                        tbConnectionStatus.Text = "Connection Close.";
-                        tbKeyboardStatus.Text = "Connection Keyboard Close.";
-                        tbMouseStatus.Text = "Connection Mouse Close.";
-                    }));
+                   
                 }
                 
                 this.Close(); // questa roba non funziona se non ho fatto la start
