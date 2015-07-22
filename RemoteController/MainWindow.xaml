@@ -28,11 +28,11 @@
         <TextBlock x:Name="tbMouseCapture" HorizontalAlignment="Left" Margin="0,441,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
         <TextBlock x:Name="tbClipboardStatus" HorizontalAlignment="Left" Margin="0,418,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="428" Height="23" Grid.ColumnSpan="4"/>
         <PasswordBox x:Name="TextBox_AddPassword" HorizontalAlignment="Left" Margin="10,119,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="258" Grid.Column="1" Height="23"/>
-        <Label Content="Shortcut:" HorizontalAlignment="Left" Margin="9,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.579,0.5" Width="70" Height="26"/>
-        <Label Content="Stop &quot;CTRL+SHIFT+S&quot;" Grid.Column="1" HorizontalAlignment="Left" Margin="9,10,0,0" VerticalAlignment="Top" Width="135" Height="26" FontWeight="Bold"/>
-        <Label Content="Start &quot;CTRL+SHIFT+C&quot;" Grid.Column="1" HorizontalAlignment="Left" Margin="149,10,0,0" VerticalAlignment="Top" Width="133" Height="26" Grid.ColumnSpan="3" FontWeight="Bold"/>
-        <Label Content="Connect to 1 server &quot;CTRL+SHIFT+1&quot;" Grid.Column="3" HorizontalAlignment="Left" Margin="10,10,-20,0" VerticalAlignment="Top" Width="224" Height="26" Grid.ColumnSpan="2" FontWeight="Bold"/>
-        <Label Content="Disconnect from server &quot;CTRL+SHIFT+D&quot;" Grid.Column="4" HorizontalAlignment="Left" Margin="57,10,-276,0" VerticalAlignment="Top" Width="249" Height="26" FontWeight="Bold"/>
+        <Label Content="Shortcuts:" HorizontalAlignment="Left" Margin="26.333,30,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.579,0.5" Width="70" Height="26" Grid.Column="3" FontWeight="Bold"/>
+        <Label Content="Stop: &quot;CTRL+SHIFT+S&quot;" Grid.Column="3" HorizontalAlignment="Left" Margin="39.333,61,0,0" VerticalAlignment="Top" Width="153" Height="26"/>
+        <Label Content="Start: &quot;CTRL+SHIFT+C&quot;" Grid.Column="3" HorizontalAlignment="Left" Margin="39.333,87,0,0" VerticalAlignment="Top" Width="147" Height="26"/>
+        <Label Content="Connect to server 1: &quot;CTRL+SHIFT+1&quot;" Grid.Column="3" HorizontalAlignment="Left" Margin="39.333,113,-17.333,0" VerticalAlignment="Top" Width="224" Height="26" Grid.ColumnSpan="2"/>
+        <Label Content="Disconnect from server: &quot;CTRL+SHIFT+D&quot;" Grid.Column="3" HorizontalAlignment="Left" Margin="39.333,139,-39.667,0" VerticalAlignment="Top" Width="249" Height="26" Grid.ColumnSpan="2"/>
 
     </Grid>
 </Window>

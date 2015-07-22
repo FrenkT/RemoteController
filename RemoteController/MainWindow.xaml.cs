@@ -585,8 +585,9 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.S))
             {
-                StopHooks();
+                StopHooks(); 
                 SendKey("UP", 162);
+                Thread.Sleep(100);
                 SendKey("UP", 160);
             }
 
@@ -601,8 +602,6 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) &&
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.D))
             {
-                SendKey("UP", 160);
-                SendKey("UP", 162);
                 Disconnect();
             }
 
@@ -639,6 +638,11 @@ namespace RemoteController
         {
             try
             {
+                StopHooks();
+                SendKey("UP", 160);
+                Thread.Sleep(100);
+                SendKey("UP", 162);
+
                 string disconnectMessage = "<Disconnect>";
                 byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
                 int bytesSend = controlSocket.Send(disconnectToByte);
@@ -652,7 +656,6 @@ namespace RemoteController
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected";
 
-                StopHooks();
                 Connect_Button.IsEnabled = true;
                 connected = false;
             }
@@ -722,8 +725,6 @@ namespace RemoteController
             {
                 if (connected)
                 {
-                    SendKey("UP", 160);
-                    SendKey("UP", 162);
                     Disconnect();
                 }
 
