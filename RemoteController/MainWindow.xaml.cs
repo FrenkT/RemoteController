@@ -730,5 +730,11 @@ namespace RemoteController
                 Connect();
             }
         }
+
+        private void WindowClosed(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Disconnect();
+            Application.Current.Shutdown();
+        }
     }
 }
