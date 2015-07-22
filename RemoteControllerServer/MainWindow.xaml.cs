@@ -320,6 +320,7 @@ namespace RemoteControllerServer
                                     }
                                 });
                                 tt.Start();
+                                connected = 1;
                             }
                         }
                         else if (content.IndexOf("<Disconnect>") > -1)
@@ -430,7 +431,7 @@ namespace RemoteControllerServer
             {
                 if (pass.CompareTo(inputpassword) == 0)
                 {
-                    connected = 1;
+                    
                     string str = "ok";
 
                     ni.Text = "Remote Controller";
@@ -593,13 +594,7 @@ namespace RemoteControllerServer
             ni.BalloonTipText = "Remote Connection is now available";
             ni.ShowBalloonTip(3000);
         }
-
-        private void Window_Closing(object sender, EventArgs e)
-        {
-            
-            
-        }
-
+        
         private void WindowClosed(object sender, System.ComponentModel.CancelEventArgs e)
         {
             try
