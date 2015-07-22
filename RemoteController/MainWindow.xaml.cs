@@ -543,9 +543,13 @@ namespace RemoteController
             {
                 firstTimeActivated = false;
                 InitHooks();
-                string disconnectMessage = "<Restart>";
-                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-                int bytesSend = controlSocket.Send(disconnectToByte);
+                try
+                {
+                    string restartMessage = "<Restart>";
+                    byte[] restartToByte = Encoding.Unicode.GetBytes(restartMessage);
+                    int bytesSend = controlSocket.Send(restartToByte);
+                }
+                catch (ObjectDisposedException) {}
                 Thread t = new Thread(() => CSender.SendClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
@@ -556,9 +560,13 @@ namespace RemoteController
         {
             firstTimeActivated = true;
             StopHooks();
-            string disconnectMessage = "<Stop>";
-            byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-            int bytesSend = controlSocket.Send(disconnectToByte);
+            try
+            {
+                string stopMessage = "<Stop>";
+                byte[] stopToByte = Encoding.Unicode.GetBytes(stopMessage);
+                int bytesSend = controlSocket.Send(stopToByte);
+            }
+            catch (ObjectDisposedException) { }
         }
 
         private void InitHooks()
@@ -595,9 +603,13 @@ namespace RemoteController
                 SendKey("UP", 162);
                 Thread.Sleep(100);
                 SendKey("UP", 160);
-                string disconnectMessage = "<Stop>";
-                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-                int bytesSend = controlSocket.Send(disconnectToByte);
+                try
+                {
+                    string stopMessage = "<Stop>";
+                    byte[] stopToByte = Encoding.Unicode.GetBytes(stopMessage);
+                    int bytesSend = controlSocket.Send(stopToByte);
+                }
+                catch (ObjectDisposedException) { }
             }
 
             if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
@@ -605,9 +617,13 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.C))
             {
                 InitHooks();
-                string disconnectMessage = "<Restart>";
-                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-                int bytesSend = controlSocket.Send(disconnectToByte);
+                try
+                {
+                    string restartMessage = "<Restart>";
+                    byte[] restartToByte = Encoding.Unicode.GetBytes(restartMessage);
+                    int bytesSend = controlSocket.Send(restartToByte);
+                }
+                catch (ObjectDisposedException) { }
             }
 
             if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
@@ -671,6 +687,7 @@ namespace RemoteController
                 Connect_Button.IsEnabled = true;
                 connected = false;
             }
+            catch (ObjectDisposedException) { }
             catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
