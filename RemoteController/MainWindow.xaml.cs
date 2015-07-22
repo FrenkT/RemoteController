@@ -543,6 +543,9 @@ namespace RemoteController
             {
                 firstTimeActivated = false;
                 InitHooks();
+                string disconnectMessage = "<Restart>";
+                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                int bytesSend = controlSocket.Send(disconnectToByte);
                 Thread t = new Thread(() => CSender.SendClipboard());
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
@@ -553,6 +556,9 @@ namespace RemoteController
         {
             firstTimeActivated = true;
             StopHooks();
+            string disconnectMessage = "<Stop>";
+            byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+            int bytesSend = controlSocket.Send(disconnectToByte);
         }
 
         private void InitHooks()
@@ -589,6 +595,9 @@ namespace RemoteController
                 SendKey("UP", 162);
                 Thread.Sleep(100);
                 SendKey("UP", 160);
+                string disconnectMessage = "<Stop>";
+                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                int bytesSend = controlSocket.Send(disconnectToByte);
             }
 
             if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&
@@ -596,6 +605,9 @@ namespace RemoteController
                 System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.C))
             {
                 InitHooks();
+                string disconnectMessage = "<Restart>";
+                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                int bytesSend = controlSocket.Send(disconnectToByte);
             }
 
             if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) &&

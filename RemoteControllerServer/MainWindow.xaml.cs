@@ -28,7 +28,7 @@ namespace RemoteControllerServer
         private System.Windows.Forms.MenuItem menuItemExit;
         private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-        private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
+        //private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
         private string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
         private string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
         private string logoImagePause = new Uri(Path.Combine(outPutDirectory, "Icons\\pause.ico")).LocalPath;
@@ -55,7 +55,7 @@ namespace RemoteControllerServer
             ni = new System.Windows.Forms.NotifyIcon();
 
             // The Icon property sets the icon that will appear in the systray for this application
-            ni.Icon = new System.Drawing.Icon(logoImageStart);
+            ni.Icon = new System.Drawing.Icon(logoImageDisconnected);
             
             this.components = new System.ComponentModel.Container();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
@@ -344,6 +344,18 @@ namespace RemoteControllerServer
                             //mouseSocket.Close();
 
                             //CListener.Dispose();
+                        }
+                        else if(content.IndexOf("<Stop>") > -1)
+                        {
+                            ni.Icon = new System.Drawing.Icon(logoImagePause);
+                            ni.BalloonTipText = "Client stopped control";
+                            ni.ShowBalloonTip(3000);
+                        }
+                        else if (content.IndexOf("<Restart>") > -1)
+                        {
+                            ni.Icon = new System.Drawing.Icon(logoImageConnected);
+                            ni.BalloonTipText = "Client restarted control";
+                            ni.ShowBalloonTip(3000);
                         }
                         else
                         {
