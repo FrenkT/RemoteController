@@ -145,7 +145,10 @@ namespace Utils.ClipboardSend
                                     elementTypeToByte = Encoding.Unicode.GetBytes("z");
                                     sent = clipboardSocket.Send(elementTypeToByte);
 
-                                    ZipFile.CreateFromDirectory(path, path + ".zip");
+                                    if (!File.Exists(path + ".zip"))
+                                    {
+                                        ZipFile.CreateFromDirectory(path, path + ".zip");
+                                    }
                                     string zipPath = path + ".zip";
 
                                     FileInfo fileInfo = new FileInfo(zipPath);
