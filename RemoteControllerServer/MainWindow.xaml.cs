@@ -24,11 +24,7 @@ namespace RemoteControllerServer
     public partial class MainWindow : Window
     {
         private System.Windows.Forms.NotifyIcon ni;
-        //private System.Windows.Forms.ContextMenu contextMenu1;
-        //private System.Windows.Forms.MenuItem menuItemExit;
-        //private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-        //private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
         private static string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
         private static string logoImageDisconnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Red.ico")).LocalPath;
         private static string logoImagePause = new Uri(Path.Combine(outPutDirectory, "Icons\\pause.ico")).LocalPath;
@@ -43,7 +39,7 @@ namespace RemoteControllerServer
         private String pass = "";
         private String locIp = GetIP4Address();
         private int defaultPort = 4510;
-        private int connected = 0;
+        private bool connected = false;
         private ClipboardListener CListener;
         private ClipboardSender CSender;
 
@@ -54,33 +50,12 @@ namespace RemoteControllerServer
 
             TextBox_IpAddress.Text = locIp;
 
-            // Create the notifyIcon
             ni = new System.Windows.Forms.NotifyIcon();
 
-            // The Icon property sets the icon that will appear in the systray for this application
             ni.Icon = iconDisconnected;
-            
-            //this.components = new System.ComponentModel.Container();
-            //this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-            //this.menuItemExit = new System.Windows.Forms.MenuItem();
-
-            //this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItemExit });
-            //this.menuItemExit.Index = 0;
-            //this.menuItemExit.Text = "Exit";
-            //this.menuItemExit.Click += new System.EventHandler(this.menuItemExitClick);
-
-            // The ContextMenu property sets the menu that will appear when the systray icon is right clicked.
-            //ni.ContextMenu = this.contextMenu1;
-
-            // The Text property sets the text that will be displayed, in a tooltip, when the mouse hovers over the systray icon.
             ni.Visible = true;
-
-            // Handle the DoubleClick event to activate the form.
             ni.DoubleClick += new System.EventHandler(this.NotifyIcon1DoubleClick);
 
-            // per gestire la chiusura tramite alt+f4 e dal close 'x'
-            //this.Closed += new EventHandler(Window_Closing);
-            
             Start_Button.IsEnabled = true;
             Close_Button.IsEnabled = false;
         }
@@ -96,7 +71,6 @@ namespace RemoteControllerServer
                     defaultPort = int.Parse(TextBox_ConfigPort.Text);
                     InitControlSocket();
                     InitKeyboardSocket();
-                    //InitMouseSocket();
                     InitClipboardSocket();
 
                     CListener = new ClipboardListener(this);
@@ -326,7 +300,7 @@ namespace RemoteControllerServer
                                     }
                                 });
                                 tt.Start();
-                                connected = 1;
+                                connected = true;
                             }
                         }
                         else if (content.IndexOf("<Disconnect>") > -1)
@@ -347,12 +321,10 @@ namespace RemoteControllerServer
                             receiveClipboard.Close();
                             receiveClipboard.Dispose();
 
-                            connected = 0;
+                            connected = false;
 
                             mouseSocket.Shutdown(SocketShutdown.Both);
                             mouseSocket.Close();
-
-                            //CListener.Dispose();
                         }
                         else if(content.IndexOf("<Stop>") > -1)
                         {
@@ -477,7 +449,7 @@ namespace RemoteControllerServer
         {
             try
             {
-                if (connected == 1)
+                if (connected)
                 {
                     ni.Icon = iconDisconnected;
 
@@ -502,7 +474,7 @@ namespace RemoteControllerServer
 
                     CListener.Dispose();
 
-                    connected = 0;
+                    connected = false;
                 }
                 else {
                     controlSocket.Close();
@@ -570,7 +542,6 @@ namespace RemoteControllerServer
                     Thread t = new Thread(() => CSender.SendClipboard());
                     t.SetApartmentState(ApartmentState.STA);
                     t.Start();
-                   // t.Join();
                 }
                 else
                 {
@@ -581,18 +552,11 @@ namespace RemoteControllerServer
 
         private void NotifyIcon1DoubleClick(object Sender, EventArgs e)
         {
-            // Show the form when the user double clicks on the notify icon. 
-
             if (this.WindowState == WindowState.Minimized)
                 this.WindowState = WindowState.Normal;
             this.Activate();
         }
-        
-        /*private void menuItemExitClick(object Sender, EventArgs e)
-        {
-            Window_Closing(Sender, e);
-        }*/
-        
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
@@ -607,7 +571,7 @@ namespace RemoteControllerServer
         {
             try
             {
-                if (connected == 1)
+                if (connected)
                 {
                     ni.Icon = iconDisconnected;
 
