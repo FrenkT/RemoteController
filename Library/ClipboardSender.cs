@@ -440,6 +440,7 @@ namespace Utils.ClipboardSend
                                         Directory.Delete(folderPath, true);
                                     }
                                     ZipFile.ExtractToDirectory(path, folderPath);
+                                    File.Delete(path);
 
                                     dropList.Add(folderPath);
                                 }
