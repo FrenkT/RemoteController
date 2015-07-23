@@ -26,7 +26,7 @@ namespace RemoteControllerServer
         private System.Windows.Forms.NotifyIcon ni;
         //private System.Windows.Forms.ContextMenu contextMenu1;
         //private System.Windows.Forms.MenuItem menuItemExit;
-        private System.ComponentModel.IContainer components;
+        //private System.ComponentModel.IContainer components;
         private static string outPutDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
         //private string logoImageStart = new Uri(Path.Combine(outPutDirectory, "Icons\\Computers.ico")).LocalPath;
         private static string logoImageConnected = new Uri(Path.Combine(outPutDirectory, "Icons\\Circle_Green.ico")).LocalPath;
@@ -96,7 +96,7 @@ namespace RemoteControllerServer
                     defaultPort = int.Parse(TextBox_ConfigPort.Text);
                     InitControlSocket();
                     InitKeyboardSocket();
-                    InitMouseSocket();
+                    //InitMouseSocket();
                     InitClipboardSocket();
 
                     CListener = new ClipboardListener(this);
@@ -304,6 +304,8 @@ namespace RemoteControllerServer
                                 clipboardSocket.Listen(1);
                                 AsyncCallback aCallback3 = new AsyncCallback(AcceptCallback);
                                 clipboardSocket.BeginAccept(aCallback3, clipboardSocket);
+
+                                InitMouseSocket();
                                 StartListenMouse();
 
                                 ni.Icon = iconConnected;
@@ -347,8 +349,8 @@ namespace RemoteControllerServer
 
                             connected = 0;
 
-                            //mouseSocket.Shutdown(SocketShutdown.Both);
-                            //mouseSocket.Close();
+                            mouseSocket.Shutdown(SocketShutdown.Both);
+                            mouseSocket.Close();
 
                             //CListener.Dispose();
                         }
