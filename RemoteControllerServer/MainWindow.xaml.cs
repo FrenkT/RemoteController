@@ -107,15 +107,15 @@ namespace RemoteControllerServer
                     
                     AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                     controlSocket.BeginAccept(aCallback, controlSocket);
+                    Start_Button.IsEnabled = false;
+                    Close_Button.IsEnabled = true;
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Fill All the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("Fill All fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-            Start_Button.IsEnabled = false;
-            Close_Button.IsEnabled = true;
         }
 
         public static string GetIP4Address()
