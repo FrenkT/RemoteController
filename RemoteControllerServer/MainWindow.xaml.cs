@@ -62,34 +62,30 @@ namespace RemoteControllerServer
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
             {
-                if (!string.IsNullOrWhiteSpace(TextBox_ConfigPassword.Password) && !string.IsNullOrWhiteSpace(TextBox_ConfigPort.Text))
-                {
                     
-                    pass = TextBox_ConfigPassword.Password;
-                    defaultPort = int.Parse(TextBox_ConfigPort.Text);
-                    InitControlSocket();
-                    InitKeyboardSocket();
-                    InitClipboardSocket();
+                pass = TextBox_ConfigPassword.Password;
+                defaultPort = int.Parse(TextBox_ConfigPort.Text);
+                InitControlSocket();
+                InitKeyboardSocket();
+                InitClipboardSocket();
 
-                    CListener = new ClipboardListener(this);
+                CListener = new ClipboardListener(this);
                     
-                    CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
+                CListener.ClipboardChange += new RawClipboardEventHandler(CListener_ClipboardChange);
                     
-                    controlSocket.Listen(1);
+                controlSocket.Listen(1);
                     
-                    AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
-                    controlSocket.BeginAccept(aCallback, controlSocket);
-                    Start_Button.IsEnabled = false;
-                    Close_Button.IsEnabled = true;
-                }
-                else
-                {
-                    System.Windows.MessageBox.Show("Fill All fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
+                controlSocket.BeginAccept(aCallback, controlSocket);
+                Start_Button.IsEnabled = false;
+                Close_Button.IsEnabled = true;
             }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            else
+            {
+                System.Windows.MessageBox.Show("Fill All fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         public static string GetIP4Address()
@@ -109,90 +105,74 @@ namespace RemoteControllerServer
 
         private void InitControlSocket() {
             int locPort = defaultPort;
-            try
-            {
-                SocketPermission permission = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
+            SocketPermission permission = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
                 
-                controlSocket = null;
+            controlSocket = null;
 
-                permission.Demand();
+            permission.Demand();
 
-                IPAddress ipAddr = IPAddress.Parse(locIp);
+            IPAddress ipAddr = IPAddress.Parse(locIp);
 
-                ipEndPoint = new IPEndPoint(ipAddr, locPort);
+            ipEndPoint = new IPEndPoint(ipAddr, locPort);
 
-                controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                controlSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                controlSocket.LingerState = new LingerOption(true, 0);
-                controlSocket.Bind(ipEndPoint);
-            }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }    
+            controlSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            controlSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            controlSocket.LingerState = new LingerOption(true, 0);
+            controlSocket.Bind(ipEndPoint);
         }
        
         private void InitKeyboardSocket() {
             int locPort = defaultPort+10;
-            try
-            {
-                SocketPermission permissionKb = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
+            SocketPermission permissionKb = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
 
-                keyboardSocket = null;
+            keyboardSocket = null;
 
-                permissionKb.Demand();
+            permissionKb.Demand();
 
-                IPAddress ipAddr = IPAddress.Parse(locIp);
+            IPAddress ipAddr = IPAddress.Parse(locIp);
 
-                ipEndPointKb = new IPEndPoint(ipAddr, locPort);
+            ipEndPointKb = new IPEndPoint(ipAddr, locPort);
 
-                keyboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                keyboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                keyboardSocket.LingerState = new LingerOption(true, 0);
-                keyboardSocket.Bind(ipEndPointKb);
-            }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            keyboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            keyboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            keyboardSocket.LingerState = new LingerOption(true, 0);
+            keyboardSocket.Bind(ipEndPointKb);
         }
 
         private void InitClipboardSocket()
         {
             int locPort = defaultPort + 30;
-            try
-            {
-                SocketPermission permissionClipboard = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
+            SocketPermission permissionClipboard = new SocketPermission(NetworkAccess.Accept, TransportType.Tcp, "", SocketPermission.AllPorts);
 
-                clipboardSocket = null;
+            clipboardSocket = null;
 
-                permissionClipboard.Demand();
+            permissionClipboard.Demand();
 
-                IPAddress ipAddr = IPAddress.Parse(locIp);
+            IPAddress ipAddr = IPAddress.Parse(locIp);
 
-                ipEndPointKb = new IPEndPoint(ipAddr, locPort);
+            ipEndPointKb = new IPEndPoint(ipAddr, locPort);
 
-                clipboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                clipboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                clipboardSocket.LingerState = new LingerOption(true, 0);
-                clipboardSocket.Bind(ipEndPointKb);
-            }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            clipboardSocket = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            clipboardSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            clipboardSocket.LingerState = new LingerOption(true, 0);
+            clipboardSocket.Bind(ipEndPointKb);
         }
       
         private void InitMouseSocket() {
             int locPort = defaultPort+20;
-            try
-            {
-                SocketPermission permissionM = new SocketPermission(NetworkAccess.Accept, TransportType.Udp, "", SocketPermission.AllPorts);
+            SocketPermission permissionM = new SocketPermission(NetworkAccess.Accept, TransportType.Udp, "", SocketPermission.AllPorts);
                
-                mouseSocket = null;
+            mouseSocket = null;
 
-                permissionM.Demand();
+            permissionM.Demand();
 
-                IPAddress ipAddr = IPAddress.Parse(locIp);
+            IPAddress ipAddr = IPAddress.Parse(locIp);
 
-                ipEndPointM = new IPEndPoint(ipAddr, locPort);
+            ipEndPointM = new IPEndPoint(ipAddr, locPort);
 
-                mouseSocket = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-                mouseSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                mouseSocket.Bind(ipEndPointM);
-            }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+            mouseSocket = new Socket(ipAddr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+            mouseSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            mouseSocket.Bind(ipEndPointM);
         }
 
         public void StartListenMouse()
@@ -248,7 +228,6 @@ namespace RemoteControllerServer
                 }
             }
             catch (ObjectDisposedException) { }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
         public void ReceiveCallbackControl(IAsyncResult ar)
@@ -349,7 +328,6 @@ namespace RemoteControllerServer
             }
             catch (ObjectDisposedException) { } //Need this when the socket are closed, exception not managed since we don't care if we loose some data
             catch (SocketException) { }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
         public void ReceiveCallbackKeyboard(IAsyncResult ar)
@@ -376,7 +354,6 @@ namespace RemoteControllerServer
             }
             catch (ObjectDisposedException) { }
             catch (SocketException) { }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
         public void ReceiveCallbackMouse(IAsyncResult ar)
@@ -402,35 +379,29 @@ namespace RemoteControllerServer
                 }
             }
             catch (ObjectDisposedException) { }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
       
         public bool CheckPassword(String inputpassword, Socket handler) 
         {
-            try
+            if (pass.CompareTo(inputpassword) == 0)
             {
-                if (pass.CompareTo(inputpassword) == 0)
-                {
                     
-                    string str = "ok";
+                string str = "ok";
 
-                    ni.Text = "Remote Controller";
-                    ni.BalloonTipTitle = "Remote Connection";
-                    ni.BalloonTipText = "Client is now connected";
-                    ni.ShowBalloonTip(30000);
+                ni.Text = "Remote Controller";
+                ni.BalloonTipTitle = "Remote Connection";
+                ni.BalloonTipText = "Client is now connected";
+                ni.ShowBalloonTip(30000);
 
-                    byte[] byteData = Encoding.Unicode.GetBytes(str);
-                    handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
-                    return true;
-                }
-                else {
-                    string str = "quit";
-                    byte[] byteData = Encoding.Unicode.GetBytes(str);
-                    handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
-                }
+                byte[] byteData = Encoding.Unicode.GetBytes(str);
+                handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
+                return true;
             }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-            
+            else {
+                string str = "quit";
+                byte[] byteData = Encoding.Unicode.GetBytes(str);
+                handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
+            }
             return false;
         }
         
@@ -442,47 +413,41 @@ namespace RemoteControllerServer
                 int bytesSend = handler.EndSend(ar);
             }
             catch (ObjectDisposedException) { }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
         
         private void CloseClick(object sender, RoutedEventArgs e)
         {
-            try
+            if (connected)
             {
-                if (connected)
-                {
-                    ni.Icon = iconDisconnected;
+                ni.Icon = iconDisconnected;
 
-                    string str = "Disconnect";
-                    byte[] byteData = Encoding.Unicode.GetBytes(str);
-                    receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
+                string str = "Disconnect";
+                byte[] byteData = Encoding.Unicode.GetBytes(str);
+                receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
-                    receiveControl.Shutdown(SocketShutdown.Both);
-                    receiveControl.Close();
-                    receiveControl.Dispose();
+                receiveControl.Shutdown(SocketShutdown.Both);
+                receiveControl.Close();
+                receiveControl.Dispose();
 
-                    receiveKeyboard.Shutdown(SocketShutdown.Both);
-                    receiveKeyboard.Close();
-                    receiveKeyboard.Dispose();
+                receiveKeyboard.Shutdown(SocketShutdown.Both);
+                receiveKeyboard.Close();
+                receiveKeyboard.Dispose();
 
-                    receiveClipboard.Shutdown(SocketShutdown.Both);
-                    receiveClipboard.Close();
-                    receiveClipboard.Dispose();
+                receiveClipboard.Shutdown(SocketShutdown.Both);
+                receiveClipboard.Close();
+                receiveClipboard.Dispose();
 
-                    mouseSocket.Shutdown(SocketShutdown.Both);
-                    mouseSocket.Close();
+                mouseSocket.Shutdown(SocketShutdown.Both);
+                mouseSocket.Close();
 
-                    CListener.Dispose();
+                CListener.Dispose();
 
-                    connected = false;
-                }
-                else {
-                    controlSocket.Close();
-                    controlSocket.Dispose();
-                }
+                connected = false;
             }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
-            
+            else {
+                controlSocket.Close();
+                controlSocket.Dispose();
+            }            
             Close_Button.IsEnabled = false;
             Start_Button.IsEnabled = true;
         }
@@ -569,39 +534,35 @@ namespace RemoteControllerServer
         
         private void WindowClosed(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            if (connected)
             {
-                if (connected)
-                {
-                    ni.Icon = iconDisconnected;
+                ni.Icon = iconDisconnected;
 
-                    string str = "Disconnect";
-                    byte[] byteData = Encoding.Unicode.GetBytes(str);
-                    receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
+                string str = "Disconnect";
+                byte[] byteData = Encoding.Unicode.GetBytes(str);
+                receiveControl.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), receiveControl);
 
-                    receiveControl.Shutdown(SocketShutdown.Both);
-                    receiveControl.Close();
-                    receiveControl.Dispose();
+                receiveControl.Shutdown(SocketShutdown.Both);
+                receiveControl.Close();
+                receiveControl.Dispose();
 
-                    receiveKeyboard.Shutdown(SocketShutdown.Both);
-                    receiveKeyboard.Close();
-                    receiveKeyboard.Dispose();
+                receiveKeyboard.Shutdown(SocketShutdown.Both);
+                receiveKeyboard.Close();
+                receiveKeyboard.Dispose();
 
-                    receiveClipboard.Shutdown(SocketShutdown.Both);
-                    receiveClipboard.Close();
-                    receiveClipboard.Dispose();
+                receiveClipboard.Shutdown(SocketShutdown.Both);
+                receiveClipboard.Close();
+                receiveClipboard.Dispose();
 
-                    mouseSocket.Shutdown(SocketShutdown.Both);
-                    mouseSocket.Close();
+                mouseSocket.Shutdown(SocketShutdown.Both);
+                mouseSocket.Close();
 
-                    CListener.Dispose();
-                }
-
-                ni.Visible = false;
-
-                System.Windows.Application.Current.Shutdown();
+                CListener.Dispose();
             }
-            catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
+
+            ni.Visible = false;
+
+            System.Windows.Application.Current.Shutdown();
         }        
     }
 }

@@ -77,31 +77,23 @@ namespace RemoteController
 
         private void ListenFromServer()
         {
-            try
-            {
-                StateObject state = new StateObject();
-                state.workSocket = controlSocket;
+            StateObject state = new StateObject();
+            state.workSocket = controlSocket;
 
-                controlSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveControlCallback), state);
-            }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            controlSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveControlCallback), state);
         }
 
         public void Accept()
         {
             Socket listener = null;
-            try
-            {
-                byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[1024];
 
-                listener = controlSocket;
+            listener = controlSocket;
 
-                object[] obj = new object[2];
-                obj[0] = buffer;
-                obj[1] = listener;
-                listener.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveControlCallback), obj);
-            }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+            object[] obj = new object[2];
+            obj[0] = buffer;
+            obj[1] = listener;
+            listener.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveControlCallback), obj);
         }
 
         public void ReceiveControlCallback(IAsyncResult ar)
@@ -120,26 +112,22 @@ namespace RemoteController
 
                     if (content.IndexOf("Disconnect") > -1)
                     {
-                        try
+                        controlSocket.Shutdown(SocketShutdown.Both);
+                        controlSocket.Close();
+                        controlSocket.Dispose();
+                        keyboardSocket.Close();
+                        mouseSocket.Close();
+                        clipboardSocket.Shutdown(SocketShutdown.Both);
+                        clipboardSocket.Close();
+                        clipboardSocket.Dispose();
+                        this.Dispatcher.Invoke((Action)(() =>
                         {
-                            controlSocket.Shutdown(SocketShutdown.Both);
-                            controlSocket.Close();
-                            controlSocket.Dispose();
-                            keyboardSocket.Close();
-                            mouseSocket.Close();
-                            clipboardSocket.Shutdown(SocketShutdown.Both);
-                            clipboardSocket.Close();
-                            clipboardSocket.Dispose();
-                            this.Dispatcher.Invoke((Action)(() =>
-                            {
-                                Disconnect_Button.IsEnabled = false;
-                                Connect_Button.IsEnabled = true;
-                                tbConnectionStatus.Text = "Not connected";
-                            }));
-                            StopHooks();
-                            connected = false;
-                        }
-                        catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+                            Disconnect_Button.IsEnabled = false;
+                            Connect_Button.IsEnabled = true;
+                            tbConnectionStatus.Text = "Not connected";
+                        }));
+                        StopHooks();
+                        connected = false;
                     }
                     else
                     {
@@ -148,7 +136,6 @@ namespace RemoteController
                 }
             }
             catch (ObjectDisposedException) { }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
         private void InitControlSocket(int p){
@@ -379,25 +366,21 @@ namespace RemoteController
         {
             if (listBoxServers.SelectedItem != null)
             {
-                try
-                {
-                    workingSelection = listBoxServers.SelectedItem.ToString();
+                workingSelection = listBoxServers.SelectedItem.ToString();
 
-                    foreach (Server server in serverList)
+                foreach (Server server in serverList)
+                {
+                    if (server.name.CompareTo(workingSelection) == 0)
                     {
-                        if (server.name.CompareTo(workingSelection) == 0)
-                        {
-                            TextBox_AddIp.Text = server.ipAddress;
-                            TextBox_AddName.Text = server.name;
-                            TextBox_AddPort.Text = server.port;
-                            TextBox_AddPassword.Password = server.password;
-                        }
+                        TextBox_AddIp.Text = server.ipAddress;
+                        TextBox_AddName.Text = server.name;
+                        TextBox_AddPort.Text = server.port;
+                        TextBox_AddPassword.Password = server.password;
                     }
-                    workingServerIp = TextBox_AddIp.Text;
-                    workingPort = int.Parse(TextBox_AddPort.Text);
-                    workingPassword = TextBox_AddPassword.Password;
                 }
-                catch (Exception exc) { MessageBox.Show(exc.ToString()); }
+                workingServerIp = TextBox_AddIp.Text;
+                workingPort = int.Parse(TextBox_AddPort.Text);
+                workingPassword = TextBox_AddPassword.Password;
             }
 
         }
@@ -694,7 +677,6 @@ namespace RemoteController
                 connected = false;
             }
             catch (ObjectDisposedException) { }
-            catch (Exception exc) { MessageBox.Show(exc.ToString()); }
         }
 
         private void Connect()
