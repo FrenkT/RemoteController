@@ -60,7 +60,7 @@ namespace RemoteControllerServer
             // The Icon property sets the icon that will appear in the systray for this application
             ni.Icon = iconDisconnected;
             
-            this.components = new System.ComponentModel.Container();
+            //this.components = new System.ComponentModel.Container();
             //this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             //this.menuItemExit = new System.Windows.Forms.MenuItem();
 
@@ -258,7 +258,7 @@ namespace RemoteControllerServer
                     receiveClipboard = handler;
                     CSender = new ClipboardSender(receiveClipboard);
                 }
-                
+
                 AsyncCallback aCallback = new AsyncCallback(AcceptCallback);
                 if (endpoint.GetHashCode() == controlSocket.LocalEndPoint.GetHashCode())
                 {
@@ -273,6 +273,7 @@ namespace RemoteControllerServer
                     clipboardSocket.BeginAccept(aCallback, clipboardSocket);
                 }
             }
+            catch (ObjectDisposedException) { }
             catch (Exception exc) { System.Windows.MessageBox.Show(exc.ToString()); }
         }
 
@@ -356,12 +357,14 @@ namespace RemoteControllerServer
                             ni.Icon = iconPause;
                             ni.BalloonTipText = "Client stopped control";
                             ni.ShowBalloonTip(3000);
+                            handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
                         }
                         else if (content.IndexOf("<Restart>") > -1)
                         {
                             ni.Icon = iconConnected;
                             ni.BalloonTipText = "Client restarted control";
                             ni.ShowBalloonTip(3000);
+                            handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, SocketFlags.None, new AsyncCallback(ReceiveCallbackControl), state);
                         }
                         else
                         {
