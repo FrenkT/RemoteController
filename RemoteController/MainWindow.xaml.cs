@@ -560,13 +560,16 @@ namespace RemoteController
         {
             firstTimeActivated = true;
             StopHooks();
-            try
+            if (connected)
             {
-                string stopMessage = "<Stop>";
-                byte[] stopToByte = Encoding.Unicode.GetBytes(stopMessage);
-                int bytesSend = controlSocket.Send(stopToByte);
+                try
+                {
+                    string stopMessage = "<Stop>";
+                    byte[] stopToByte = Encoding.Unicode.GetBytes(stopMessage);
+                    int bytesSend = controlSocket.Send(stopToByte);
+                }
+                catch (ObjectDisposedException) { } 
             }
-            catch (ObjectDisposedException) { }
         }
 
         private void InitHooks()
@@ -671,15 +674,18 @@ namespace RemoteController
                 Thread.Sleep(100);
                 SendKey("UP", 162);
 
-                string disconnectMessage = "<Disconnect>";
-                byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
-                int bytesSend = controlSocket.Send(disconnectToByte);
-                controlSocket.Close();
-                keyboardSocket.Close();
-                clipboardSocket.Shutdown(SocketShutdown.Both);
-                clipboardSocket.Close();
-                mouseSocket.Close();
+                if (connected)
+                {
+                    string disconnectMessage = "<Disconnect>";
+                    byte[] disconnectToByte = Encoding.Unicode.GetBytes(disconnectMessage);
+                    int bytesSend = controlSocket.Send(disconnectToByte);
 
+                    controlSocket.Close();
+                    keyboardSocket.Close();
+                    clipboardSocket.Shutdown(SocketShutdown.Both);
+                    clipboardSocket.Close();
+                    mouseSocket.Close();
+                }
                 Disconnect_Button.IsEnabled = false;
                 Connect_Button.IsEnabled = true;
                 tbConnectionStatus.Text = "Not connected";
