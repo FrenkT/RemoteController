@@ -1,7 +1,3 @@
 # RemoteController
 
-A .NET client/server application that allows to use two PCs with the same input devices.
-
-Features:
-- use the client hardware (keyboard/mouse) to control a server
-- transfer clipboard content bidirectionally between client and server
+A .NET client/server software working under Windows, allowing one computer (master) to share its keyboard, mouse and clipboard with multiple devices (slaves).
